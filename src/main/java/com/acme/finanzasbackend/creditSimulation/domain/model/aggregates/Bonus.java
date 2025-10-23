@@ -1,6 +1,5 @@
 package com.acme.finanzasbackend.creditSimulation.domain.model.aggregates;
 
-import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.Bfh;
 import com.acme.finanzasbackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -12,8 +11,5 @@ import lombok.Setter;
 @Entity
 public class Bonus extends AuditableAbstractAggregateRoot<Bonus> {
     private Boolean isApplied;
-    private Double visMaxValue;
-
-    @Embedded
-    private Bfh bfh;
+    private Double givenAmount;
 }

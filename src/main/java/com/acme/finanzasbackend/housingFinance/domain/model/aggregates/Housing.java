@@ -26,6 +26,9 @@ public class Housing extends AuditableAbstractAggregateRoot<Housing> {
     private Province province;
     private String district;
     private String address;
+
+    private String department; // ej: 304, 102A
+
     private Double area;
     private Integer roomQuantity;
     private Double salePrice;

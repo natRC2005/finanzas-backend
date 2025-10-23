@@ -64,7 +64,10 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
 
     private Double creditAmount;
     private Double monthlyFee;
-    private Integer years;
+    private Double monthsPaymentTerm; // months to pay
+
+    private Double financing; // amount to finance in total
+    private Double downPaymentPercentage; // initial payment
 
     @OneToMany(mappedBy = "creditApplication", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Payment> payments = new ArrayList<>();
