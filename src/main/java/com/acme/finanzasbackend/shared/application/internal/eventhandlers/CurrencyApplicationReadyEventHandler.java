@@ -6,19 +6,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 
 @Service
-public class ApplicationReadyEventHandler {
+public class CurrencyApplicationReadyEventHandler {
     private final CurrencyCommandService currencyCommandService;
-    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationReadyEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CurrencyApplicationReadyEventHandler.class);
 
-    public ApplicationReadyEventHandler(CurrencyCommandService currencyCommandService) {
+    public CurrencyApplicationReadyEventHandler(CurrencyCommandService currencyCommandService) {
         this.currencyCommandService = currencyCommandService;
     }
 
+    @Order(1)
     @EventListener
     public void on(ApplicationReadyEvent event) {
         var applicationName = event.getApplicationContext().getId();
