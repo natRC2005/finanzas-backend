@@ -24,9 +24,12 @@ public class Client extends AuditableAbstractAggregateRoot<Client> {
     private String dni;
     private Integer age;
     private String email;
-    private Integer dependentsNumber;
     private Boolean isWorking;
+    private Integer dependentsNumber;
     private Double monthlyIncome;
+
+    private Boolean isDependent;
+    private Double workingYears;
 
     @ManyToOne
     @JoinColumn(name = "currency_id", nullable = false)
