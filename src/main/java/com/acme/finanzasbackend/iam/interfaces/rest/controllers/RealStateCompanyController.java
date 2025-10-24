@@ -3,9 +3,13 @@ package com.acme.finanzasbackend.iam.interfaces.rest.controllers;
 import com.acme.finanzasbackend.iam.domain.model.queries.GetRealStateCompanyByIdQuery;
 import com.acme.finanzasbackend.iam.domain.services.RealStateCompanyCommandService;
 import com.acme.finanzasbackend.iam.domain.services.RealStateCompanyQueryService;
+import com.acme.finanzasbackend.iam.interfaces.rest.resources.AuthenticatedResource;
 import com.acme.finanzasbackend.iam.interfaces.rest.resources.RealStateCompanyResource;
+import com.acme.finanzasbackend.iam.interfaces.rest.resources.SignInResource;
 import com.acme.finanzasbackend.iam.interfaces.rest.resources.SignUpResource;
+import com.acme.finanzasbackend.iam.interfaces.rest.transform.AuthenticatedResourceFromEntityAssembler;
 import com.acme.finanzasbackend.iam.interfaces.rest.transform.RealStateCompanyResourceFromEntityAssembler;
+import com.acme.finanzasbackend.iam.interfaces.rest.transform.SignInCommandFromResourceAssembler;
 import com.acme.finanzasbackend.iam.interfaces.rest.transform.SignUpCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -48,5 +52,19 @@ public class RealStateCompanyController {
         var userEntity = user.get();
         var userResource = RealStateCompanyResourceFromEntityAssembler.toResourceFromEntity(userEntity);
         return new ResponseEntity<>(userResource, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/sign-in")
+    @Operation(summary = "Sign in as a Real State Company", description = "Sign in as a Real State Company representative")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Real State Company signed in"),
+            @ApiResponse(responseCode = "404", description = "Real State Company not found")})
+    public ResponseEntity<AuthenticatedResource> signIn(@RequestBody SignInResource resource) {
+        var signInCommand = SignInCommandFromResourceAssembler.toCommandFromResource(resource);
+        var user = realStateCompanyCommandService.handle(signInCommand);
+        if (user.isEmpty()) return ResponseEntity.badRequest().build();
+        var userEntity = user.get();
+        var authenticatedResource = AuthenticatedResourceFromEntityAssembler.toResourceFromEntity(userEntity);
+        return ResponseEntity.ok(authenticatedResource);
     }
 }
