@@ -8,6 +8,8 @@ import com.acme.finanzasbackend.iam.domain.services.RealStateCompanyCommandServi
 import com.acme.finanzasbackend.iam.infrastructure.persistence.jpa.repositories.RealStateCompanyRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class RealStateCompanyCommandServiceImpl implements RealStateCompanyCommandService {
     private final RealStateCompanyRepository realStateCompanyRepository;
@@ -38,11 +40,11 @@ public class RealStateCompanyCommandServiceImpl implements RealStateCompanyComma
     }
 
     @Override
-    public Long handle(SignInCommand command) {
+    public Optional<RealStateCompany> handle(SignInCommand command) {
         RealStateCompany user = realStateCompanyRepository.findByUsername(command.username())
                 .orElseThrow(() -> new IllegalArgumentException("Username not found"));
         if (!hashingService.matches(command.password(), user.getPassword()))
             throw new IllegalArgumentException("Wrong password");
-        return user.getId();
+        return Optional.of(user);
     }
 }
