@@ -9,6 +9,7 @@ import java.util.Optional;
 @Repository
 public interface RealStateCompanyRepository extends JpaRepository<RealStateCompany, Long> {
     Optional<RealStateCompany> findById(Long id);
+    Optional<RealStateCompany> findByUsername(String username);
     boolean existsByCompanyName(String companyName);
     boolean existsByCompanyEmail(String companyEmail);
     boolean existsByUsername(String username);

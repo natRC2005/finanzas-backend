@@ -15,7 +15,6 @@ public class RealStateCompany extends AuditableAbstractAggregateRoot<RealStateCo
     private String ruc;
     private String companyEmail;
     private String password;
-    private Boolean isLogged;
 
     public RealStateCompany() {}
 
@@ -25,6 +24,5 @@ public class RealStateCompany extends AuditableAbstractAggregateRoot<RealStateCo
         this.ruc = command.ruc();
         this.companyEmail = command.companyEmail();
         this.password = password;
-        this.isLogged = false;
     }
 }
