@@ -1,5 +1,6 @@
 package com.acme.finanzasbackend.clientManagement.interfaces.rest.controllers;
 
+import com.acme.finanzasbackend.clientManagement.domain.model.queries.GetAllClientsQuery;
 import com.acme.finanzasbackend.clientManagement.domain.model.queries.GetClientByIdQuery;
 import com.acme.finanzasbackend.clientManagement.domain.services.ClientCommandService;
 import com.acme.finanzasbackend.clientManagement.domain.services.ClientQueryService;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -29,7 +32,7 @@ public class ClientController {
         this.clientQueryService = clientQueryService;
     }
 
-    @PostMapping("/items")
+    @PostMapping("/clients")
     @Operation(summary = "Create a new Client", description = "Create a new Client")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Client created"),
@@ -59,5 +62,18 @@ public class ClientController {
         var clientEntity = client.get();
         var clientResource = ClientResourceFromEntityAssembler.toResourceFromEntity(clientEntity);
         return ResponseEntity.ok(clientResource);
+    }
+
+    @GetMapping("/{realStateCompanyId}/clients")
+    @Operation(summary = "Get all clients", description = "Get all available clients in the system by realStateCompanyId.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Clients retrieved successfully.")})
+    public ResponseEntity<List<ClientResource>> getAllCurrency(@PathVariable Long realStateCompanyId) {
+        var getAllClientsQuery = new GetAllClientsQuery(realStateCompanyId);
+        var clients = clientQueryService.handle(getAllClientsQuery);
+        var clientResources = clients.stream()
+                .map(ClientResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(clientResources);
     }
 }
