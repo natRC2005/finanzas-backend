@@ -1,8 +1,6 @@
-package com.acme.finanzasbackend.clientManagement.domain.model.commands;
+package com.acme.finanzasbackend.clientManagement.interfaces.rest.resources;
 
-import com.acme.finanzasbackend.shared.domain.model.valueobjects.RealStateCompanyId;
-
-public record CreateClientCommand(
+public record CreateClientResource(
         Long realStateCompanyId,
         String firstname,
         String lastname,
@@ -16,7 +14,7 @@ public record CreateClientCommand(
         Double workingYears,
         Long currencyId
 ) {
-    public CreateClientCommand {
+    public CreateClientResource {
         if (realStateCompanyId == null || realStateCompanyId <= 0) {
             throw new IllegalArgumentException("realStateCompanyId can't be null or less than zero");
         }
