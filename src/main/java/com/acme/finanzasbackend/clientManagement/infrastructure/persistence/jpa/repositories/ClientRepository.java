@@ -1,0 +1,14 @@
+package com.acme.finanzasbackend.clientManagement.infrastructure.persistence.jpa.repositories;
+
+import com.acme.finanzasbackend.clientManagement.domain.model.aggregates.Client;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface ClientRepository extends JpaRepository<Client, Long> {
+    Optional<Client> findById(Long id);
+    Boolean existsByFirstnameAndLastname(String firstName, String lastName);
+    Boolean existsByDni(String dni);
+}
