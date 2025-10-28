@@ -1,9 +1,8 @@
-package com.acme.finanzasbackend.housingFinance.domain.model.commands;
+package com.acme.finanzasbackend.housingFinance.interfaces.rest.resources;
 
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.HousingState;
-import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.Province;
 
-public record CreateHousingCommand(
+public record CreateHousingResource(
         Long realStateCompanyId,
         String title,
         String description,
@@ -17,7 +16,7 @@ public record CreateHousingCommand(
         String housingState,
         Long currencyId
 ) {
-    public CreateHousingCommand {
+    public CreateHousingResource {
         if (realStateCompanyId == null || realStateCompanyId <= 0) {
             throw new IllegalArgumentException("realStateCompanyId can't be null or less than zero");
         }
