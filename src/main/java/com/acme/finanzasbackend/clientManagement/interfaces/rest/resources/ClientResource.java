@@ -13,6 +13,6 @@ public record ClientResource(
         Double monthlyIncome,
         Boolean isDependent,
         Double workingYears,
-        String currencyName
+        String currencySymbol
 ) {
 }
