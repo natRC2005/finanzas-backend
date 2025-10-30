@@ -2,6 +2,7 @@ package com.acme.finanzasbackend.housingFinance.domain.model.aggregates;
 
 import com.acme.finanzasbackend.clientManagement.domain.model.commands.CreateClientCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.commands.CreateHousingCommand;
+import com.acme.finanzasbackend.housingFinance.domain.model.commands.UpdateHousingCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.HousingState;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.Province;
 import com.acme.finanzasbackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
@@ -57,4 +58,17 @@ public class Housing extends AuditableAbstractAggregateRoot<Housing> {
         this.currency = currency;
     }
 
+    public void modifyHousing(UpdateHousingCommand command, Currency currency) {
+        this.title = command.title();
+        this.description = command.description();
+        this.province = Province.valueOf(command.province());
+        this.district = command.district();
+        this.address = command.address();
+        this.department = command.department();
+        this.area = command.area();
+        this.roomQuantity = command.roomQuantity();
+        this.salePrice = command.salePrice();
+        this.housingState = HousingState.valueOf(command.housingState());
+        this.currency = currency;
+    }
 }
