@@ -3,14 +3,8 @@ package com.acme.finanzasbackend.iam.interfaces.rest.controllers;
 import com.acme.finanzasbackend.iam.domain.model.queries.GetRealStateCompanyByIdQuery;
 import com.acme.finanzasbackend.iam.domain.services.RealStateCompanyCommandService;
 import com.acme.finanzasbackend.iam.domain.services.RealStateCompanyQueryService;
-import com.acme.finanzasbackend.iam.interfaces.rest.resources.AuthenticatedResource;
-import com.acme.finanzasbackend.iam.interfaces.rest.resources.RealStateCompanyResource;
-import com.acme.finanzasbackend.iam.interfaces.rest.resources.SignInResource;
-import com.acme.finanzasbackend.iam.interfaces.rest.resources.SignUpResource;
-import com.acme.finanzasbackend.iam.interfaces.rest.transform.AuthenticatedResourceFromEntityAssembler;
-import com.acme.finanzasbackend.iam.interfaces.rest.transform.RealStateCompanyResourceFromEntityAssembler;
-import com.acme.finanzasbackend.iam.interfaces.rest.transform.SignInCommandFromResourceAssembler;
-import com.acme.finanzasbackend.iam.interfaces.rest.transform.SignUpCommandFromResourceAssembler;
+import com.acme.finanzasbackend.iam.interfaces.rest.resources.*;
+import com.acme.finanzasbackend.iam.interfaces.rest.transform.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -80,5 +74,18 @@ public class RealStateCompanyController {
         return ResponseEntity.ok(realStateCompanyResource);
     }
 
-
+    @PutMapping("/{realStateCompanyId}")
+    @Operation(summary = "Update Real State Company", description = "Updates all editable fields of a Real State Company")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Real State Company updated"),
+            @ApiResponse(responseCode = "404", description = "Real State Company not found")
+    })
+    public ResponseEntity<RealStateCompanyResource> updateRealStateCompany(@PathVariable Long realStateCompanyId, @RequestBody UpdateRealStateCompanyResource resource) {
+        var updateRealStateCompanyCommand = UpdateRealStateCompanyCommandFromResourceAssembler.toCommandFromResource(realStateCompanyId, resource);
+        var updatedRealStateCompany = realStateCompanyCommandService.handle(updateRealStateCompanyCommand);
+        if (updatedRealStateCompany.isEmpty()) return ResponseEntity.notFound().build();
+        var updatedRealStateCompanyEntity = updatedRealStateCompany.get();
+        var updatedRealStateCompanyResource = RealStateCompanyResourceFromEntityAssembler.toResourceFromEntity(updatedRealStateCompanyEntity);
+        return ResponseEntity.ok(updatedRealStateCompanyResource);
+    }
 }
