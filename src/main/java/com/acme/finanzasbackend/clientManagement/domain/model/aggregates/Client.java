@@ -67,4 +67,9 @@ public class Client extends AuditableAbstractAggregateRoot<Client> {
         this.workingYears = command.workingYears();
         this.currency = currency;
     }
+
+    public void exchangeSalaryCurrency(Currency currency) {
+        this.monthlyIncome = this.currency.exchangeCurrency(this.monthlyIncome);
+        this.currency = currency;
+    }
 }
