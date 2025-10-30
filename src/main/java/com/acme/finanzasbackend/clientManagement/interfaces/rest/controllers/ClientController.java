@@ -6,8 +6,14 @@ import com.acme.finanzasbackend.clientManagement.domain.services.ClientCommandSe
 import com.acme.finanzasbackend.clientManagement.domain.services.ClientQueryService;
 import com.acme.finanzasbackend.clientManagement.interfaces.rest.resources.ClientResource;
 import com.acme.finanzasbackend.clientManagement.interfaces.rest.resources.CreateClientResource;
+import com.acme.finanzasbackend.clientManagement.interfaces.rest.resources.UpdateClientResource;
 import com.acme.finanzasbackend.clientManagement.interfaces.rest.transform.ClientResourceFromEntityAssembler;
 import com.acme.finanzasbackend.clientManagement.interfaces.rest.transform.CreateClientCommandFromResourceAssembler;
+import com.acme.finanzasbackend.clientManagement.interfaces.rest.transform.UpdateClientCommandFromResourceAssembler;
+import com.acme.finanzasbackend.iam.interfaces.rest.resources.RealStateCompanyResource;
+import com.acme.finanzasbackend.iam.interfaces.rest.resources.UpdateRealStateCompanyResource;
+import com.acme.finanzasbackend.iam.interfaces.rest.transform.RealStateCompanyResourceFromEntityAssembler;
+import com.acme.finanzasbackend.iam.interfaces.rest.transform.UpdateRealStateCompanyCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -75,5 +81,20 @@ public class ClientController {
                 .map(ClientResourceFromEntityAssembler::toResourceFromEntity)
                 .toList();
         return ResponseEntity.ok(clientResources);
+    }
+
+    @PutMapping("/{clientId}")
+    @Operation(summary = "Update Client", description = "Updates all editable fields of a Client")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Client updated"),
+            @ApiResponse(responseCode = "404", description = "Client not found")
+    })
+    public ResponseEntity<ClientResource> updateClient(@PathVariable Long clientId, @RequestBody UpdateClientResource resource) {
+        var updateClientCommand = UpdateClientCommandFromResourceAssembler.toCommandFromResource(clientId, resource);
+        var updatedClient = clientCommandService.handle(updateClientCommand);
+        if (updatedClient.isEmpty()) return ResponseEntity.notFound().build();
+        var updatedClientEntity = updatedClient.get();
+        var updatedClientResource = ClientResourceFromEntityAssembler.toResourceFromEntity(updatedClientEntity);
+        return ResponseEntity.ok(updatedClientResource);
     }
 }
