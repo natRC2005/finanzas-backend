@@ -3,24 +3,15 @@ package com.acme.finanzasbackend.iam.interfaces.rest.controllers;
 import com.acme.finanzasbackend.iam.domain.model.queries.GetRealStateCompanyByIdQuery;
 import com.acme.finanzasbackend.iam.domain.services.RealStateCompanyCommandService;
 import com.acme.finanzasbackend.iam.domain.services.RealStateCompanyQueryService;
-import com.acme.finanzasbackend.iam.interfaces.rest.resources.AuthenticatedResource;
-import com.acme.finanzasbackend.iam.interfaces.rest.resources.RealStateCompanyResource;
-import com.acme.finanzasbackend.iam.interfaces.rest.resources.SignInResource;
-import com.acme.finanzasbackend.iam.interfaces.rest.resources.SignUpResource;
-import com.acme.finanzasbackend.iam.interfaces.rest.transform.AuthenticatedResourceFromEntityAssembler;
-import com.acme.finanzasbackend.iam.interfaces.rest.transform.RealStateCompanyResourceFromEntityAssembler;
-import com.acme.finanzasbackend.iam.interfaces.rest.transform.SignInCommandFromResourceAssembler;
-import com.acme.finanzasbackend.iam.interfaces.rest.transform.SignUpCommandFromResourceAssembler;
+import com.acme.finanzasbackend.iam.interfaces.rest.resources.*;
+import com.acme.finanzasbackend.iam.interfaces.rest.transform.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -66,5 +57,35 @@ public class RealStateCompanyController {
         var userEntity = user.get();
         var authenticatedResource = AuthenticatedResourceFromEntityAssembler.toResourceFromEntity(userEntity);
         return ResponseEntity.ok(authenticatedResource);
+    }
+
+    @GetMapping("/{realStateCompanyId}")
+    @Operation(summary = "Get Real State Company by id", description = "Get Real State Company by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Real State Company found"),
+            @ApiResponse(responseCode = "404", description = "Real State Company not found")
+    })
+    public ResponseEntity<RealStateCompanyResource> getRealStateCompanyById(@PathVariable Long realStateCompanyId) {
+        var getRealStateCompanyByIdQuery = new GetRealStateCompanyByIdQuery(realStateCompanyId);
+        var realStateCompany = realStateCompanyQueryService.handle(getRealStateCompanyByIdQuery);
+        if (realStateCompany.isEmpty()) return ResponseEntity.badRequest().build();
+        var realStateCompanyEntity = realStateCompany.get();
+        var realStateCompanyResource = RealStateCompanyResourceFromEntityAssembler.toResourceFromEntity(realStateCompanyEntity);
+        return ResponseEntity.ok(realStateCompanyResource);
+    }
+
+    @PutMapping("/{realStateCompanyId}")
+    @Operation(summary = "Update Real State Company", description = "Updates all editable fields of a Real State Company")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Real State Company updated"),
+            @ApiResponse(responseCode = "404", description = "Real State Company not found")
+    })
+    public ResponseEntity<RealStateCompanyResource> updateRealStateCompany(@PathVariable Long realStateCompanyId, @RequestBody UpdateRealStateCompanyResource resource) {
+        var updateRealStateCompanyCommand = UpdateRealStateCompanyCommandFromResourceAssembler.toCommandFromResource(realStateCompanyId, resource);
+        var updatedRealStateCompany = realStateCompanyCommandService.handle(updateRealStateCompanyCommand);
+        if (updatedRealStateCompany.isEmpty()) return ResponseEntity.notFound().build();
+        var updatedRealStateCompanyEntity = updatedRealStateCompany.get();
+        var updatedRealStateCompanyResource = RealStateCompanyResourceFromEntityAssembler.toResourceFromEntity(updatedRealStateCompanyEntity);
+        return ResponseEntity.ok(updatedRealStateCompanyResource);
     }
 }

@@ -1,6 +1,7 @@
 package com.acme.finanzasbackend.iam.domain.model.aggregates;
 
 import com.acme.finanzasbackend.iam.domain.model.commands.SignUpCommand;
+import com.acme.finanzasbackend.iam.domain.model.commands.UpdateRealStateCompanyCommand;
 import com.acme.finanzasbackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.Entity;
 import lombok.Getter;
@@ -19,6 +20,14 @@ public class RealStateCompany extends AuditableAbstractAggregateRoot<RealStateCo
     public RealStateCompany() {}
 
     public RealStateCompany(SignUpCommand command, String password) {
+        this.companyName = command.companyName();
+        this.username = command.username();
+        this.ruc = command.ruc();
+        this.companyEmail = command.companyEmail();
+        this.password = password;
+    }
+
+    public void modifyRealStateCompany(UpdateRealStateCompanyCommand command, String password) {
         this.companyName = command.companyName();
         this.username = command.username();
         this.ruc = command.ruc();
