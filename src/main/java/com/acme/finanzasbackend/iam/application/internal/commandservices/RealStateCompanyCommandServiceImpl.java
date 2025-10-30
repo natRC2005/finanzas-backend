@@ -4,6 +4,7 @@ import com.acme.finanzasbackend.iam.application.internal.outboundingservices.has
 import com.acme.finanzasbackend.iam.domain.model.aggregates.RealStateCompany;
 import com.acme.finanzasbackend.iam.domain.model.commands.SignInCommand;
 import com.acme.finanzasbackend.iam.domain.model.commands.SignUpCommand;
+import com.acme.finanzasbackend.iam.domain.model.commands.UpdateRealStateCompanyCommand;
 import com.acme.finanzasbackend.iam.domain.services.RealStateCompanyCommandService;
 import com.acme.finanzasbackend.iam.infrastructure.persistence.jpa.repositories.RealStateCompanyRepository;
 import org.springframework.stereotype.Service;
@@ -46,5 +47,18 @@ public class RealStateCompanyCommandServiceImpl implements RealStateCompanyComma
         if (!hashingService.matches(command.password(), user.getPassword()))
             throw new IllegalArgumentException("Wrong password");
         return Optional.of(user);
+    }
+
+    @Override
+    public Optional<RealStateCompany> handle(UpdateRealStateCompanyCommand command) {
+        RealStateCompany realStateCompany = realStateCompanyRepository.findById(command.id())
+                .orElseThrow(() -> new IllegalArgumentException("Company not found"));
+        realStateCompany.modifyRealStateCompany(command, hashingService.encode(command.password()));
+        try {
+            realStateCompanyRepository.save(realStateCompany);
+        }  catch (Exception e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+        return Optional.of(realStateCompany);
     }
 }
