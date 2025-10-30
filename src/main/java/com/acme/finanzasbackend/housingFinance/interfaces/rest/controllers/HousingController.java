@@ -6,8 +6,10 @@ import com.acme.finanzasbackend.housingFinance.domain.services.HousingCommandSer
 import com.acme.finanzasbackend.housingFinance.domain.services.HousingQueryService;
 import com.acme.finanzasbackend.housingFinance.interfaces.rest.resources.CreateHousingResource;
 import com.acme.finanzasbackend.housingFinance.interfaces.rest.resources.HousingResource;
+import com.acme.finanzasbackend.housingFinance.interfaces.rest.resources.UpdateHousingResource;
 import com.acme.finanzasbackend.housingFinance.interfaces.rest.transform.CreateHousingCommandFromResourceAssembler;
 import com.acme.finanzasbackend.housingFinance.interfaces.rest.transform.HousingResourceFromEntityAssembler;
+import com.acme.finanzasbackend.housingFinance.interfaces.rest.transform.UpdateHousingCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -75,5 +77,20 @@ public class HousingController {
                 .map(HousingResourceFromEntityAssembler::toResourceFromEntity)
                 .toList();
         return ResponseEntity.ok(housingResources);
+    }
+
+    @PutMapping("/{housingId}")
+    @Operation(summary = "Update Housing", description = "Updates all editable fields of a Housing")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Housing updated"),
+            @ApiResponse(responseCode = "404", description = "Housing not found")
+    })
+    public ResponseEntity<HousingResource> updateHousing(@PathVariable Long housingId, @RequestBody UpdateHousingResource resource) {
+        var updateHousingCommand = UpdateHousingCommandFromResourceAssembler.toCommandFromResource(housingId, resource);
+        var updatedHousing = housingCommandService.handle(updateHousingCommand);
+        if (updatedHousing.isEmpty()) return ResponseEntity.notFound().build();
+        var updatedHousingEntity = updatedHousing.get();
+        var updatedHousingResource = HousingResourceFromEntityAssembler.toResourceFromEntity(updatedHousingEntity);
+        return ResponseEntity.ok(updatedHousingResource);
     }
 }

@@ -2,10 +2,13 @@ package com.acme.finanzasbackend.housingFinance.application.internal.commandserv
 
 import com.acme.finanzasbackend.housingFinance.domain.model.aggregates.Housing;
 import com.acme.finanzasbackend.housingFinance.domain.model.commands.CreateHousingCommand;
+import com.acme.finanzasbackend.housingFinance.domain.model.commands.UpdateHousingCommand;
 import com.acme.finanzasbackend.housingFinance.domain.services.HousingCommandService;
 import com.acme.finanzasbackend.housingFinance.infrastructure.persistence.jpa.repositories.HousingRepository;
 import com.acme.finanzasbackend.shared.infrastructure.persistence.jpa.repositories.CurrencyRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class HousingCommandServiceImpl implements HousingCommandService {
@@ -30,5 +33,19 @@ public class HousingCommandServiceImpl implements HousingCommandService {
             throw new RuntimeException(ex.getMessage());
         }
         return housing.getId();
+    }
+
+    @Override
+    public Optional<Housing> handle(UpdateHousingCommand command) {
+        Housing housing = housingRepository.findById(command.id())
+                .orElseThrow(() -> new RuntimeException("Housing not found"));
+        var currency = currencyRepository.getById(command.currencyId());
+        housing.modifyHousing(command, currency);
+        try {
+            housingRepository.save(housing);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
+        return Optional.of(housing);
     }
 }
