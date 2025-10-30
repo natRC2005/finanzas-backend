@@ -1,5 +1,6 @@
 package com.acme.finanzasbackend.housingFinance.interfaces.rest.controllers;
 
+import com.acme.finanzasbackend.housingFinance.domain.model.commands.DeleteHousingCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.queries.GetAllHousingQuery;
 import com.acme.finanzasbackend.housingFinance.domain.model.queries.GetHousingByIdQuery;
 import com.acme.finanzasbackend.housingFinance.domain.services.HousingCommandService;
@@ -92,5 +93,19 @@ public class HousingController {
         var updatedHousingEntity = updatedHousing.get();
         var updatedHousingResource = HousingResourceFromEntityAssembler.toResourceFromEntity(updatedHousingEntity);
         return ResponseEntity.ok(updatedHousingResource);
+    }
+
+    @DeleteMapping("/{housingId}")
+    @Operation(summary = "Delete Housing", description = "Delete Housing")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Housing deleted successfully."),
+            @ApiResponse(responseCode = "404", description = "Housing not found.")})
+    public ResponseEntity<HousingResource> deleteHousing(@PathVariable Long housingId) {
+        DeleteHousingCommand command = new DeleteHousingCommand(housingId);
+        var housing = housingCommandService.handle(command);
+        if (housing.isEmpty()) return ResponseEntity.notFound().build();
+        var housingEntity = housing.get();
+        var housingResource = HousingResourceFromEntityAssembler.toResourceFromEntity(housingEntity);
+        return ResponseEntity.ok(housingResource);
     }
 }
