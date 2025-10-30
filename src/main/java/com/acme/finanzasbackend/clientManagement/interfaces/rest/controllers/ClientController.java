@@ -1,6 +1,7 @@
 package com.acme.finanzasbackend.clientManagement.interfaces.rest.controllers;
 
 import com.acme.finanzasbackend.clientManagement.domain.model.commands.DeleteClientCommand;
+import com.acme.finanzasbackend.clientManagement.domain.model.commands.ExchangeSalaryCurrencyCommand;
 import com.acme.finanzasbackend.clientManagement.domain.model.queries.GetAllClientsQuery;
 import com.acme.finanzasbackend.clientManagement.domain.model.queries.GetClientByIdQuery;
 import com.acme.finanzasbackend.clientManagement.domain.services.ClientCommandService;
@@ -106,6 +107,20 @@ public class ClientController {
             @ApiResponse(responseCode = "404", description = "Client not found.")})
     public ResponseEntity<ClientResource> deleteClient(@PathVariable Long clientId) {
         DeleteClientCommand command = new DeleteClientCommand(clientId);
+        var client = clientCommandService.handle(command);
+        if (client.isEmpty()) return ResponseEntity.notFound().build();
+        var clientEntity = client.get();
+        var clientResource = ClientResourceFromEntityAssembler.toResourceFromEntity(clientEntity);
+        return ResponseEntity.ok(clientResource);
+    }
+
+    @PatchMapping("/{clientId}")
+    @Operation(summary = "Exchange Client salary currency", description = "Exchange Client salary currency")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Client updated successfully."),
+            @ApiResponse(responseCode = "404", description = "Client not found.")})
+    public ResponseEntity<ClientResource> exchangeClientSalary(@PathVariable Long clientId) {
+        ExchangeSalaryCurrencyCommand command = new ExchangeSalaryCurrencyCommand(clientId);
         var client = clientCommandService.handle(command);
         if (client.isEmpty()) return ResponseEntity.notFound().build();
         var clientEntity = client.get();
