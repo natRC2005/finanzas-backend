@@ -111,7 +111,7 @@ public class HousingController {
     }
 
     @PatchMapping("/{housingId}")
-    @Operation(summary = "Exchange Housing salary currency", description = "Exchange Housing salary currency")
+    @Operation(summary = "Exchange Housing sale price currency", description = "Exchange Housing sale price currency")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Housing updated successfully."),
             @ApiResponse(responseCode = "404", description = "Housing not found.")})
