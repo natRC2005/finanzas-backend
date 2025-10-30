@@ -1,5 +1,6 @@
 package com.acme.finanzasbackend.creditSimulation.domain.model.entities;
 
+import com.acme.finanzasbackend.creditSimulation.domain.model.commands.CreateGracePeriodCommand;
 import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.GracePeriodType;
 import com.acme.finanzasbackend.shared.domain.model.entities.AuditableModel;
 import jakarta.persistence.Entity;
@@ -10,4 +11,11 @@ import lombok.Getter;
 public class GracePeriod extends AuditableModel {
     private GracePeriodType type;
     private Integer months;
+
+    public GracePeriod() {}
+
+    public GracePeriod(CreateGracePeriodCommand command) {
+        this.type = GracePeriodType.valueOf(command.type());
+        this.months = command.months();
+    }
 }

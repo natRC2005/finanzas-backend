@@ -12,10 +12,6 @@ import com.acme.finanzasbackend.clientManagement.interfaces.rest.resources.Updat
 import com.acme.finanzasbackend.clientManagement.interfaces.rest.transform.ClientResourceFromEntityAssembler;
 import com.acme.finanzasbackend.clientManagement.interfaces.rest.transform.CreateClientCommandFromResourceAssembler;
 import com.acme.finanzasbackend.clientManagement.interfaces.rest.transform.UpdateClientCommandFromResourceAssembler;
-import com.acme.finanzasbackend.iam.interfaces.rest.resources.RealStateCompanyResource;
-import com.acme.finanzasbackend.iam.interfaces.rest.resources.UpdateRealStateCompanyResource;
-import com.acme.finanzasbackend.iam.interfaces.rest.transform.RealStateCompanyResourceFromEntityAssembler;
-import com.acme.finanzasbackend.iam.interfaces.rest.transform.UpdateRealStateCompanyCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
