@@ -2,6 +2,7 @@ package com.acme.finanzasbackend.housingFinance.application.internal.commandserv
 
 import com.acme.finanzasbackend.housingFinance.domain.model.aggregates.Housing;
 import com.acme.finanzasbackend.housingFinance.domain.model.commands.CreateHousingCommand;
+import com.acme.finanzasbackend.housingFinance.domain.model.commands.DeleteHousingCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.commands.UpdateHousingCommand;
 import com.acme.finanzasbackend.housingFinance.domain.services.HousingCommandService;
 import com.acme.finanzasbackend.housingFinance.infrastructure.persistence.jpa.repositories.HousingRepository;
@@ -46,6 +47,14 @@ public class HousingCommandServiceImpl implements HousingCommandService {
         } catch (Exception ex) {
             throw new RuntimeException(ex.getMessage());
         }
+        return Optional.of(housing);
+    }
+
+    @Override
+    public Optional<Housing> handle(DeleteHousingCommand command) {
+        Housing housing = housingRepository.findById(command.id())
+                .orElseThrow(() -> new RuntimeException("Housing not found"));
+        housingRepository.delete(housing);
         return Optional.of(housing);
     }
 }
