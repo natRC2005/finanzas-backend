@@ -17,10 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -67,4 +64,21 @@ public class RealStateCompanyController {
         var authenticatedResource = AuthenticatedResourceFromEntityAssembler.toResourceFromEntity(userEntity);
         return ResponseEntity.ok(authenticatedResource);
     }
+
+    @GetMapping("/{realStateCompanyId}")
+    @Operation(summary = "Get Real State Company by id", description = "Get Real State Company by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Real State Company found"),
+            @ApiResponse(responseCode = "404", description = "Real State Company not found")
+    })
+    public ResponseEntity<RealStateCompanyResource> getRealStateCompanyById(@PathVariable Long realStateCompanyId) {
+        var getRealStateCompanyByIdQuery = new GetRealStateCompanyByIdQuery(realStateCompanyId);
+        var realStateCompany = realStateCompanyQueryService.handle(getRealStateCompanyByIdQuery);
+        if (realStateCompany.isEmpty()) return ResponseEntity.badRequest().build();
+        var realStateCompanyEntity = realStateCompany.get();
+        var realStateCompanyResource = RealStateCompanyResourceFromEntityAssembler.toResourceFromEntity(realStateCompanyEntity);
+        return ResponseEntity.ok(realStateCompanyResource);
+    }
+
+
 }
