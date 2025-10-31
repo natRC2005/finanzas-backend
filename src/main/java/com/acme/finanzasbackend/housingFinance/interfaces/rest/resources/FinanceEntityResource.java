@@ -20,7 +20,7 @@ public record FinanceEntityResource(
         Integer maximumMonthPaymentTerm,
         Boolean allowsAnotherHousingFinancing,
         Double minYearsDependentEmploymentTenure,
-        Double maxYearsIndependentEmploymentTenure,
+        Double minYearsIndependentEmploymentTenure,
         Boolean requiresCreditHistory
 ) {
 }
