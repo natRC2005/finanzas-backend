@@ -23,7 +23,7 @@ public class FinanceEntityResourceFromEntityAssembler {
                 entity.getMaximumMonthPaymentTerm(),
                 entity.getAllowsAnotherHousingFinancing(),
                 entity.getMinYearsDependentEmploymentTenure(),
-                entity.getMaxYearsIndependentEmploymentTenure(),
+                entity.getMinYearsIndependentEmploymentTenure(),
                 entity.getRequiresCreditHistory()
         );
     }
