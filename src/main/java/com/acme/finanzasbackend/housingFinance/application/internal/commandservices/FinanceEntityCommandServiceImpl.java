@@ -1,10 +1,12 @@
 package com.acme.finanzasbackend.housingFinance.application.internal.commandservices;
 
 import com.acme.finanzasbackend.housingFinance.domain.model.aggregates.FinanceEntity;
+import com.acme.finanzasbackend.housingFinance.domain.model.commands.EvaluateFinanceEntityCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.commands.SeedFinanceEntitiesCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.FinanceEntityType;
 import com.acme.finanzasbackend.housingFinance.domain.services.FinanceEntityCommandService;
 import com.acme.finanzasbackend.housingFinance.infrastructure.persistence.jpa.repositories.FinanceEntityRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -94,5 +96,12 @@ public class FinanceEntityCommandServiceImpl implements FinanceEntityCommandServ
                 financeEntityRepository.save(financeEntity);
             }
         });
+    }
+
+    @Override
+    public Boolean handle(EvaluateFinanceEntityCommand command) {
+        FinanceEntity financeEntity = financeEntityRepository.findById(command.id())
+                .orElseThrow(() -> new EntityNotFoundException("FinanceEntity not found"));
+        return financeEntity.isFinanceEntityAccepted(command);
     }
 }

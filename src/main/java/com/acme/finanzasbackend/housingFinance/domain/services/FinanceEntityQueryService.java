@@ -1,6 +1,7 @@
 package com.acme.finanzasbackend.housingFinance.domain.services;
 
 import com.acme.finanzasbackend.housingFinance.domain.model.aggregates.FinanceEntity;
+import com.acme.finanzasbackend.housingFinance.domain.model.commands.EvaluateFinanceEntityCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.queries.GetAllFinanceEntitiesQuery;
 import com.acme.finanzasbackend.housingFinance.domain.model.queries.GetFinanceEntityByIdQuery;
 

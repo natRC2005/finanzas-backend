@@ -1,5 +1,6 @@
 package com.acme.finanzasbackend.housingFinance.domain.model.aggregates;
 
+import com.acme.finanzasbackend.housingFinance.domain.model.commands.EvaluateFinanceEntityCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.FinanceEntityType;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.HousingState;
 import com.acme.finanzasbackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
@@ -57,12 +58,12 @@ public class FinanceEntity extends AuditableAbstractAggregateRoot<FinanceEntity>
         this.minimumSalary = minimumSalary;
         this.minimumDownPaymentPercentage = minimumDownPaymentPercentage;
         this.maximumDownPaymentPercentage = maximumDownPaymentPercentage;
-        this.allowsUsedHousing = allowsUsedHousing; // ---> from ServiceImpl
+        this.allowsUsedHousing = allowsUsedHousing; // ---> boolean
         this.inProjectMaxGracePeriodMonths = inProjectMaxGracePeriodMonths;
         this.generalMaxGracePeriodMonths = generalMaxGracePeriodMonths;
         this.minimumMonthPaymentTerm = minimumMonthPaymentTerm;
         this.maximumMonthPaymentTerm = maximumMonthPaymentTerm;
-        this.allowsAnotherHousingFinancing = allowsAnotherHousingFinancing; // ---> from ServiceImpl
+        this.allowsAnotherHousingFinancing = allowsAnotherHousingFinancing; // ---> boolean
         this.minYearsDependentEmploymentTenure = minYearsDependentEmploymentTenure;
         this.minYearsIndependentEmploymentTenure = minYearsIndependentEmploymentTenure;
         this.requiresCreditHistory = requiresCreditHistory;
@@ -79,7 +80,8 @@ public class FinanceEntity extends AuditableAbstractAggregateRoot<FinanceEntity>
                                            Double salary, Double downPaymentPercentage,
                                            HousingState housingState, Integer gracePeriodMonths,
                                            Boolean isDependent, Double workingYears,
-                                           Boolean hasCreditHistory) {
+                                           Boolean hasCreditHistory, Boolean isHousingUsed,
+                                           Boolean hasAnotherHousingFinancing) {
         if (this.minimumHousingPrice != null && housingPrice < this.minimumHousingPrice) return false;
         if (this.maximumHousingPrice != null && housingPrice > this.maximumHousingPrice) return false;
         if (this.minimumFinance != null && this.minimumFinance > 1 && financeAmount < this.minimumFinance) return false;
@@ -96,6 +98,30 @@ public class FinanceEntity extends AuditableAbstractAggregateRoot<FinanceEntity>
             if (this.minYearsDependentEmploymentTenure != null && workingYears < this.minYearsDependentEmploymentTenure) return false;
         } else if (this.minYearsIndependentEmploymentTenure != null && workingYears < this.minYearsIndependentEmploymentTenure) return false;
         if (this.requiresCreditHistory && !hasCreditHistory) return false;
+        if (!this.allowsUsedHousing && isHousingUsed) return false;
+        if (!this.allowsAnotherHousingFinancing && hasAnotherHousingFinancing) return false;
+        return true;
+    }
+
+    public boolean isFinanceEntityAccepted(EvaluateFinanceEntityCommand command) {
+        if (this.minimumHousingPrice != null && command.housingPrice() < this.minimumHousingPrice) return false;
+        if (this.maximumHousingPrice != null && command.housingPrice() > this.maximumHousingPrice) return false;
+        if (this.minimumFinance != null && this.minimumFinance > 1 && command.financeAmount() < this.minimumFinance) return false;
+        if (this.maximumFinance != null) {
+            if (this.maximumFinance > 1 && command.financeAmount() > this.maximumFinance) return false;
+            else if (command.financeAmount() > this.maximumFinance * command.housingPrice()) return false;
+        }
+        if (this.minimumSalary != null && command.salary() < this.minimumSalary) return false;
+        if (this.minimumDownPaymentPercentage != null && command.downPaymentPercentage() < this.minimumDownPaymentPercentage) return false;
+        if (this.maximumDownPaymentPercentage != null && command.downPaymentPercentage() > this.maximumDownPaymentPercentage) return false;
+        if (command.housingState() == HousingState.EN_PROYECTO && this.inProjectMaxGracePeriodMonths != null && command.gracePeriodMonths() > this.inProjectMaxGracePeriodMonths) return false;
+        if (command.housingState() != HousingState.EN_PROYECTO && this.generalMaxGracePeriodMonths != null && command.gracePeriodMonths() > this.generalMaxGracePeriodMonths) return false;
+        if (command.isDependent()) {
+            if (this.minYearsDependentEmploymentTenure != null && command.workingYears() < this.minYearsDependentEmploymentTenure) return false;
+        } else if (this.minYearsIndependentEmploymentTenure != null && command.workingYears() < this.minYearsIndependentEmploymentTenure) return false;
+        if (this.requiresCreditHistory && !command.hasCreditHistory()) return false;
+        if (!this.allowsUsedHousing && command.isHousingUsed()) return false;
+        if (!this.allowsAnotherHousingFinancing && command.hasAnotherHousingFinancing()) return false;
         return true;
     }
 }
