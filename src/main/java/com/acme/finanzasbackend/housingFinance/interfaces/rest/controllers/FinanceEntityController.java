@@ -2,8 +2,11 @@ package com.acme.finanzasbackend.housingFinance.interfaces.rest.controllers;
 
 import com.acme.finanzasbackend.housingFinance.domain.model.queries.GetAllFinanceEntitiesQuery;
 import com.acme.finanzasbackend.housingFinance.domain.model.queries.GetFinanceEntityByIdQuery;
+import com.acme.finanzasbackend.housingFinance.domain.services.FinanceEntityCommandService;
 import com.acme.finanzasbackend.housingFinance.domain.services.FinanceEntityQueryService;
+import com.acme.finanzasbackend.housingFinance.interfaces.rest.resources.EvaluateFinanceEntityResource;
 import com.acme.finanzasbackend.housingFinance.interfaces.rest.resources.FinanceEntityResource;
+import com.acme.finanzasbackend.housingFinance.interfaces.rest.transform.EvaluateFinanceEntityCommandFromResourceAssembler;
 import com.acme.finanzasbackend.housingFinance.interfaces.rest.transform.FinanceEntityResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -11,10 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,9 +23,11 @@ import java.util.List;
 @Tag(name = "Finance Entities", description = "Available Finance Entities Endpoints")
 public class FinanceEntityController {
     private final FinanceEntityQueryService financeEntityQueryService;
+    private final FinanceEntityCommandService financeEntityCommandService;
 
-    public FinanceEntityController(FinanceEntityQueryService financeEntityQueryService) {
+    public FinanceEntityController(FinanceEntityQueryService financeEntityQueryService, FinanceEntityCommandService financeEntityCommandService) {
         this.financeEntityQueryService = financeEntityQueryService;
+        this.financeEntityCommandService = financeEntityCommandService;
     }
 
     @GetMapping
@@ -46,12 +48,23 @@ public class FinanceEntityController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Finance Entity found"),
             @ApiResponse(responseCode = "404", description = "Finance Entity not found")})
-    public ResponseEntity<FinanceEntityResource> getCurrencyById(@PathVariable Long financeEntityId) {
+    public ResponseEntity<FinanceEntityResource> getFinanceEntityById(@PathVariable Long financeEntityId) {
         var getFinanceEntityByIdQuery = new GetFinanceEntityByIdQuery(financeEntityId);
         var financeEntityItem = financeEntityQueryService.handle(getFinanceEntityByIdQuery);
         if (financeEntityItem.isEmpty()) return ResponseEntity.notFound().build();
-        var currencyEntity = financeEntityItem.get();
-        var currencyResource = FinanceEntityResourceFromEntityAssembler.toResourceFromEntity(currencyEntity);
-        return ResponseEntity.ok(currencyResource);
+        var financeEntityEntity = financeEntityItem.get();
+        var financeEntityResource = FinanceEntityResourceFromEntityAssembler.toResourceFromEntity(financeEntityEntity);
+        return ResponseEntity.ok(financeEntityResource);
+    }
+
+    @PostMapping("/{financeEntityId}/evaluate")
+    @Operation(summary = "Evaluate finance entity", description = "Evaluate finance entity")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Finance Entity found"),
+            @ApiResponse(responseCode = "404", description = "Finance Entity not found")})
+    public ResponseEntity<Boolean> evaluateFinanceEntity(@PathVariable Long financeEntityId, @RequestBody EvaluateFinanceEntityResource resource) {
+        var command = EvaluateFinanceEntityCommandFromResourceAssembler.toCommandFromResource(financeEntityId, resource);
+        var evaluationResult = financeEntityCommandService.handle(command);
+        return ResponseEntity.ok(evaluationResult);
     }
 }
