@@ -2,6 +2,7 @@ package com.acme.finanzasbackend.housingFinance.interfaces.rest.controllers;
 
 import com.acme.finanzasbackend.housingFinance.domain.model.queries.GetAllFinanceEntitiesQuery;
 import com.acme.finanzasbackend.housingFinance.domain.model.queries.GetFinanceEntityByIdQuery;
+import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.FinanceEntityValidationResult;
 import com.acme.finanzasbackend.housingFinance.domain.services.FinanceEntityCommandService;
 import com.acme.finanzasbackend.housingFinance.domain.services.FinanceEntityQueryService;
 import com.acme.finanzasbackend.housingFinance.interfaces.rest.resources.EvaluateFinanceEntityResource;
@@ -62,7 +63,7 @@ public class FinanceEntityController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Finance Entity found"),
             @ApiResponse(responseCode = "404", description = "Finance Entity not found")})
-    public ResponseEntity<Boolean> evaluateFinanceEntity(@PathVariable Long financeEntityId, @RequestBody EvaluateFinanceEntityResource resource) {
+    public ResponseEntity<FinanceEntityValidationResult> evaluateFinanceEntity(@PathVariable Long financeEntityId, @RequestBody EvaluateFinanceEntityResource resource) {
         var command = EvaluateFinanceEntityCommandFromResourceAssembler.toCommandFromResource(financeEntityId, resource);
         var evaluationResult = financeEntityCommandService.handle(command);
         return ResponseEntity.ok(evaluationResult);

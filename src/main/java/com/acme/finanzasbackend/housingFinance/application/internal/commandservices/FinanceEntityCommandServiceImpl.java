@@ -4,6 +4,7 @@ import com.acme.finanzasbackend.housingFinance.domain.model.aggregates.FinanceEn
 import com.acme.finanzasbackend.housingFinance.domain.model.commands.EvaluateFinanceEntityCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.commands.SeedFinanceEntitiesCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.FinanceEntityType;
+import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.FinanceEntityValidationResult;
 import com.acme.finanzasbackend.housingFinance.domain.services.FinanceEntityCommandService;
 import com.acme.finanzasbackend.housingFinance.infrastructure.persistence.jpa.repositories.FinanceEntityRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -99,7 +100,7 @@ public class FinanceEntityCommandServiceImpl implements FinanceEntityCommandServ
     }
 
     @Override
-    public Boolean handle(EvaluateFinanceEntityCommand command) {
+    public FinanceEntityValidationResult handle(EvaluateFinanceEntityCommand command) {
         FinanceEntity financeEntity = financeEntityRepository.findById(command.id())
                 .orElseThrow(() -> new EntityNotFoundException("FinanceEntity not found"));
         return financeEntity.isFinanceEntityAccepted(command);
