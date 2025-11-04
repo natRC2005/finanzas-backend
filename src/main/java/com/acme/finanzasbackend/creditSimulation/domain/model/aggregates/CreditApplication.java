@@ -122,8 +122,6 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
 
     /**
      * Missing tasks
-     * - Create bonus by id
-     * - Get bonus by id
      * - evaluate credit application
      * - create credit application
      * - get credit application by id
