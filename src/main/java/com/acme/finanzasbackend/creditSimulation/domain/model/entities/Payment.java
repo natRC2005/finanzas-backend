@@ -6,8 +6,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Entity
 public class Payment extends AuditableModel {
     private Integer orderNumber;
@@ -19,5 +21,16 @@ public class Payment extends AuditableModel {
     @ManyToOne
     @JoinColumn(name = "credit_application_id", nullable = false)
     private CreditApplication creditApplication;
+
+    public Payment() {}
+
+    public Payment(Integer orderNumber, Double fee, Double interest,
+                   Double amortization, Double balance) {
+        this.orderNumber = orderNumber;
+        this.fee = fee;
+        this.interest = interest;
+        this.amortization = amortization;
+        this.balance = balance;
+    }
 
 }
