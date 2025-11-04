@@ -2,6 +2,7 @@ package com.acme.finanzasbackend.housingFinance.domain.model.aggregates;
 
 import com.acme.finanzasbackend.housingFinance.domain.model.commands.EvaluateFinanceEntityCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.FinanceEntityType;
+import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.FinanceEntityValidationResult;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.HousingState;
 import com.acme.finanzasbackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.Entity;
@@ -76,52 +77,87 @@ public class FinanceEntity extends AuditableAbstractAggregateRoot<FinanceEntity>
         return null;
     }
 
-    public boolean isFinanceEntityAccepted(Double housingPrice, Double financeAmount,
-                                           Double salary, Double downPaymentPercentage,
-                                           HousingState housingState, Integer gracePeriodMonths,
-                                           Boolean isDependent, Double workingYears,
-                                           Boolean hasCreditHistory, Boolean isHousingUsed,
-                                           Boolean hasAnotherHousingFinancing) {
-        if (this.minimumHousingPrice != null && housingPrice < this.minimumHousingPrice) return false;
-        if (this.maximumHousingPrice != null && housingPrice > this.maximumHousingPrice) return false;
-        if (this.minimumFinance != null && this.minimumFinance > 1 && financeAmount < this.minimumFinance) return false;
+    public FinanceEntityValidationResult isFinanceEntityAccepted(
+            Double housingPrice, Double financeAmount,
+            Double salary, Double downPaymentPercentage,
+            HousingState housingState, Integer gracePeriodMonths,
+            Boolean isDependent, Double workingYears,
+            Boolean hasCreditHistory, Boolean isHousingUsed,
+            Boolean hasAnotherHousingFinancing) {
+        if (this.minimumHousingPrice != null && housingPrice < this.minimumHousingPrice)
+            return new FinanceEntityValidationResult(false, "El precio de la vivienda es menor al mínimo permitido.");
+        if (this.maximumHousingPrice != null && housingPrice > this.maximumHousingPrice)
+            return new FinanceEntityValidationResult(false, "El precio de la vivienda supera el máximo permitido.");
+        if (this.minimumFinance != null && this.minimumFinance > 1 && financeAmount < this.minimumFinance)
+            return new FinanceEntityValidationResult(false, "El monto de financiamiento es menor al mínimo permitido.");
         if (this.maximumFinance != null) {
-            if (this.maximumFinance > 1 && financeAmount > this.maximumFinance) return false;
-            else if (financeAmount > this.maximumFinance * housingPrice) return false;
+            if (this.maximumFinance > 1 && financeAmount > this.maximumFinance)
+                return new FinanceEntityValidationResult(false, "El monto de financiamiento supera el máximo permitido.");
+            else if (financeAmount > this.maximumFinance * housingPrice)
+                return new FinanceEntityValidationResult(false, "El monto de financiamiento excede el porcentaje máximo del valor de la vivienda.");
         }
-        if (this.minimumSalary != null && salary < this.minimumSalary) return false;
-        if (this.minimumDownPaymentPercentage != null && downPaymentPercentage < this.minimumDownPaymentPercentage) return false;
-        if (this.maximumDownPaymentPercentage != null && downPaymentPercentage > this.maximumDownPaymentPercentage) return false;
-        if (housingState == HousingState.EN_PROYECTO && this.inProjectMaxGracePeriodMonths != null && gracePeriodMonths > this.inProjectMaxGracePeriodMonths) return false;
-        if (housingState != HousingState.EN_PROYECTO && this.generalMaxGracePeriodMonths != null && gracePeriodMonths > this.generalMaxGracePeriodMonths) return false;
+        if (this.minimumSalary != null && salary < this.minimumSalary)
+            return new FinanceEntityValidationResult(false, "El salario es menor al mínimo requerido.");
+        if (this.minimumDownPaymentPercentage != null && downPaymentPercentage < this.minimumDownPaymentPercentage)
+            return new FinanceEntityValidationResult(false, "La cuota inicial es menor al porcentaje mínimo permitido.");
+        if (this.maximumDownPaymentPercentage != null && downPaymentPercentage > this.maximumDownPaymentPercentage)
+            return new FinanceEntityValidationResult(false, "La cuota inicial supera el porcentaje máximo permitido.");
+        if (housingState == HousingState.EN_PROYECTO && this.inProjectMaxGracePeriodMonths != null && gracePeriodMonths > this.inProjectMaxGracePeriodMonths)
+            return new FinanceEntityValidationResult(false, "El periodo de gracia excede el máximo permitido para viviendas en proyecto.");
+        if (housingState != HousingState.EN_PROYECTO && this.generalMaxGracePeriodMonths != null && gracePeriodMonths > this.generalMaxGracePeriodMonths)
+            return new FinanceEntityValidationResult(false, "El periodo de gracia excede el máximo permitido para viviendas en general.");
         if (isDependent) {
-            if (this.minYearsDependentEmploymentTenure != null && workingYears < this.minYearsDependentEmploymentTenure) return false;
-        } else if (this.minYearsIndependentEmploymentTenure != null && workingYears < this.minYearsIndependentEmploymentTenure) return false;
-        if (this.requiresCreditHistory && !hasCreditHistory) return false;
-        if (!this.allowsUsedHousing && isHousingUsed) return false;
-        if (!this.allowsAnotherHousingFinancing && hasAnotherHousingFinancing) return false;
-        return true;
+            if (this.minYearsDependentEmploymentTenure != null && workingYears < this.minYearsDependentEmploymentTenure)
+                return new FinanceEntityValidationResult(false, "Los años de trabajo dependiente son menores al mínimo requerido.");
+        } else if (this.minYearsIndependentEmploymentTenure != null && workingYears < this.minYearsIndependentEmploymentTenure)
+            return new FinanceEntityValidationResult(false, "Los años de trabajo independiente son menores al mínimo requerido.");
+        if (this.requiresCreditHistory && !hasCreditHistory)
+            return new FinanceEntityValidationResult(false, "Se requiere historial crediticio.");
+        if (!this.allowsUsedHousing && isHousingUsed)
+            return new FinanceEntityValidationResult(false, "No se permite financiar vivienda usada.");
+        if (!this.allowsAnotherHousingFinancing && hasAnotherHousingFinancing)
+            return new FinanceEntityValidationResult(false, "No se permite tener otro financiamiento de vivienda vigente.");
+        return new FinanceEntityValidationResult(true, "Cumple con todos los requisitos.");
     }
 
-    public boolean isFinanceEntityAccepted(EvaluateFinanceEntityCommand command) {
-        if (this.minimumHousingPrice != null && command.housingPrice() < this.minimumHousingPrice) return false;
-        if (this.maximumHousingPrice != null && command.housingPrice() > this.maximumHousingPrice) return false;
-        if (this.minimumFinance != null && this.minimumFinance > 1 && command.financeAmount() < this.minimumFinance) return false;
+    public FinanceEntityValidationResult isFinanceEntityAccepted(EvaluateFinanceEntityCommand command) {
+        if (this.minimumHousingPrice != null && command.housingPrice() < this.minimumHousingPrice)
+            return new FinanceEntityValidationResult(false, "El precio de la vivienda es menor al mínimo permitido.");
+        if (this.maximumHousingPrice != null && command.housingPrice() > this.maximumHousingPrice)
+            return new FinanceEntityValidationResult(false, "El precio de la vivienda supera el máximo permitido.");
+        if (this.minimumFinance != null && this.minimumFinance > 1 && command.financeAmount() < this.minimumFinance)
+            return new FinanceEntityValidationResult(false, "El monto de financiamiento es menor al mínimo permitido.");
         if (this.maximumFinance != null) {
-            if (this.maximumFinance > 1 && command.financeAmount() > this.maximumFinance) return false;
-            else if (command.financeAmount() > this.maximumFinance * command.housingPrice()) return false;
+            if (this.maximumFinance > 1 && command.financeAmount() > this.maximumFinance)
+                return new FinanceEntityValidationResult(false, "El monto de financiamiento supera el máximo permitido.");
+            else if (command.financeAmount() > this.maximumFinance * command.housingPrice())
+                return new FinanceEntityValidationResult(false, "El monto de financiamiento excede el porcentaje máximo del valor de la vivienda.");
         }
-        if (this.minimumSalary != null && command.salary() < this.minimumSalary) return false;
-        if (this.minimumDownPaymentPercentage != null && command.downPaymentPercentage() < this.minimumDownPaymentPercentage) return false;
-        if (this.maximumDownPaymentPercentage != null && command.downPaymentPercentage() > this.maximumDownPaymentPercentage) return false;
-        if (command.housingState() == HousingState.EN_PROYECTO && this.inProjectMaxGracePeriodMonths != null && command.gracePeriodMonths() > this.inProjectMaxGracePeriodMonths) return false;
-        if (command.housingState() != HousingState.EN_PROYECTO && this.generalMaxGracePeriodMonths != null && command.gracePeriodMonths() > this.generalMaxGracePeriodMonths) return false;
+        if (this.minimumSalary != null && command.salary() < this.minimumSalary)
+            return new FinanceEntityValidationResult(false, "El salario es menor al mínimo requerido.");
+        if (this.minimumDownPaymentPercentage != null && command.downPaymentPercentage() < this.minimumDownPaymentPercentage)
+            return new FinanceEntityValidationResult(false, "La cuota inicial es menor al porcentaje mínimo permitido.");
+        if (this.maximumDownPaymentPercentage != null && command.downPaymentPercentage() > this.maximumDownPaymentPercentage)
+            return new FinanceEntityValidationResult(false, "La cuota inicial supera el porcentaje máximo permitido.");
+        if (command.housingState() == HousingState.EN_PROYECTO &&
+                this.inProjectMaxGracePeriodMonths != null &&
+                command.gracePeriodMonths() > this.inProjectMaxGracePeriodMonths)
+            return new FinanceEntityValidationResult(false, "El periodo de gracia excede el máximo permitido para viviendas en proyecto.");
+        if (command.housingState() != HousingState.EN_PROYECTO &&
+                this.generalMaxGracePeriodMonths != null &&
+                command.gracePeriodMonths() > this.generalMaxGracePeriodMonths)
+            return new FinanceEntityValidationResult(false, "El periodo de gracia excede el máximo permitido para viviendas en general.");
         if (command.isDependent()) {
-            if (this.minYearsDependentEmploymentTenure != null && command.workingYears() < this.minYearsDependentEmploymentTenure) return false;
-        } else if (this.minYearsIndependentEmploymentTenure != null && command.workingYears() < this.minYearsIndependentEmploymentTenure) return false;
-        if (this.requiresCreditHistory && !command.hasCreditHistory()) return false;
-        if (!this.allowsUsedHousing && command.isHousingUsed()) return false;
-        if (!this.allowsAnotherHousingFinancing && command.hasAnotherHousingFinancing()) return false;
-        return true;
+            if (this.minYearsDependentEmploymentTenure != null && command.workingYears() < this.minYearsDependentEmploymentTenure)
+                return new FinanceEntityValidationResult(false, "Los años de trabajo dependiente son menores al mínimo requerido.");
+        } else if (this.minYearsIndependentEmploymentTenure != null && command.workingYears() < this.minYearsIndependentEmploymentTenure)
+            return new FinanceEntityValidationResult(false, "Los años de trabajo independiente son menores al mínimo requerido.");
+        if (this.requiresCreditHistory && !command.hasCreditHistory())
+            return new FinanceEntityValidationResult(false, "Se requiere historial crediticio.");
+        if (!this.allowsUsedHousing && command.isHousingUsed())
+            return new FinanceEntityValidationResult(false, "No se permite financiar vivienda usada.");
+        if (!this.allowsAnotherHousingFinancing && command.hasAnotherHousingFinancing())
+            return new FinanceEntityValidationResult(false, "No se permite tener otro financiamiento de vivienda vigente.");
+        return new FinanceEntityValidationResult(true, "Cumple con todos los requisitos.");
     }
 }
