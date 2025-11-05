@@ -18,4 +18,10 @@ public class GracePeriod extends AuditableModel {
         this.type = GracePeriodType.valueOf(command.type());
         this.months = command.months();
     }
+
+    public GracePeriod(String type,
+                       Integer months) {
+        this.type = GracePeriodType.valueOf(type);
+        this.months = months;
+    }
 }

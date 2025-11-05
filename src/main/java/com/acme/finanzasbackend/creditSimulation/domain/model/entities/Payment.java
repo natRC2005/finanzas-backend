@@ -16,6 +16,8 @@ public class Payment extends AuditableModel {
     private Double fee;
     private Double interest;
     private Double amortization;
+    private Double lifeInsuranceFee;
+    private Double housingInsuranceFee;
     private Double balance;
 
     @ManyToOne
@@ -25,12 +27,14 @@ public class Payment extends AuditableModel {
     public Payment() {}
 
     public Payment(Integer orderNumber, Double fee, Double interest,
-                   Double amortization, Double balance) {
+                   Double amortization, Double lifeInsuranceFee,
+                   Double housingInsuranceFee, Double balance) {
         this.orderNumber = orderNumber;
         this.fee = fee;
         this.interest = interest;
         this.amortization = amortization;
+        this.lifeInsuranceFee = lifeInsuranceFee;
+        this.housingInsuranceFee = housingInsuranceFee;
         this.balance = balance;
     }
-
 }
