@@ -23,6 +23,15 @@ public class InterestRate extends AuditableModel {
         this.percentage = command.percentage();
     }
 
+    public InterestRate(String type,
+                        String capitalization,
+                        Double percentage) {
+        this.type = InterestRateType.valueOf(type);
+        if (this.type == InterestRateType.EFECTIVA) this.capitalization = null;
+        else this.capitalization = Capitalization.valueOf(capitalization);
+        this.percentage = percentage;
+    }
+
     public double getEffectiveMonthlyRate() {
         if (type == InterestRateType.EFECTIVA) {
             // Asumimos que la tasa es efectiva anual
