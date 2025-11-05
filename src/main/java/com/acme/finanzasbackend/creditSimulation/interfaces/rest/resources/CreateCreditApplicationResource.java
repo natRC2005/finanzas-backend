@@ -1,8 +1,8 @@
-package com.acme.finanzasbackend.creditSimulation.domain.model.commands;
+package com.acme.finanzasbackend.creditSimulation.interfaces.rest.resources;
 
 import java.time.LocalDate;
 
-public record CreateCreditApplicationCommand(
+public record CreateCreditApplicationResource(
         Long realStateCompanyId,
         LocalDate startDate,
         Long clientId,
@@ -21,7 +21,7 @@ public record CreateCreditApplicationCommand(
         Double monthlyHousingInsuranceRate,
         Boolean hasCreditHistory
 ) {
-    public CreateCreditApplicationCommand {
+    public CreateCreditApplicationResource {
         if (realStateCompanyId == null) {
             throw new IllegalArgumentException("realStateCompanyId cannot be null");
         }
