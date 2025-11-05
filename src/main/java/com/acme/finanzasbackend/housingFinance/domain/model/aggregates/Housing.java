@@ -73,7 +73,9 @@ public class Housing extends AuditableAbstractAggregateRoot<Housing> {
     }
 
     public void exchangeSalePriceCurrency(Currency currency) {
-        this.salePrice = this.currency.exchangeCurrency(this.salePrice);
-        this.currency = currency;
+        if (this.currency != currency) {
+            this.salePrice = this.currency.exchangeCurrency(this.salePrice);
+            this.currency = currency;
+        }
     }
 }
