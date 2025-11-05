@@ -16,7 +16,9 @@ public record CreateCreditApplicationCommand(
         String gracePeriodType,
         Integer gracePeriodMonths,
         Double monthsPaymentTerm,
-        Double downPaymentPercentage
+        Double downPaymentPercentage,
+        Double insuranceFee,
+        Boolean hasCreditHistory
 ) {
     public CreateCreditApplicationCommand {
         if (realStateCompanyId == null) {
@@ -60,6 +62,12 @@ public record CreateCreditApplicationCommand(
         }
         if (downPaymentPercentage == null || downPaymentPercentage < 0) {
             throw new IllegalArgumentException("downPaymentPercentage cannot be negative");
+        }
+        if (insuranceFee == null || insuranceFee < 0) {
+            throw new IllegalArgumentException("insuranceFee cannot be negative");
+        }
+        if (hasCreditHistory == null) {
+            throw new IllegalArgumentException("hasCreditHistory cannot be null");
         }
     }
 }
