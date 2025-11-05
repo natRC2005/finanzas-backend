@@ -100,7 +100,8 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
         this.interestRate = interestRate;
         this.bonus = bonus;
         this.gracePeriod = gracePeriod;
-        this.monthlyLifeInsuranceRate = command.insuranceFee();
+        this.monthlyLifeInsuranceRate = command.monthlyLifeInsuranceRate();
+        this.monthlyHousingInsuranceRate  = command.monthlyHousingInsuranceRate();
         this.monthsPaymentTerm = command.monthsPaymentTerm();
         this.downPaymentPercentage = command.downPaymentPercentage();
         this.financing = calculateFinancing();
@@ -132,7 +133,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     private Van calculateVan() {
         if (interestRate == null || payments == null || payments.isEmpty()) return null;
 
-        double tasaMensual = interestRate.getEffectiveMonthlyRate();
+        double tasaMensual = interestRate.getEffectiveMonthlyRate() / 100;
         double van = -financing; // flujo inicial negativo
 
         for (Payment payment : payments) {
@@ -193,17 +194,17 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             return 0.0;
 
          double salePrice = this.housing.getSalePrice();
-         double initialPayment = salePrice * this.downPaymentPercentage;
+         double initialPayment = salePrice * (downPaymentPercentage / 100);
          double bonusAmount = this.bonus.getGivenAmount();
-
-         return salePrice - initialPayment - bonusAmount;
+         double financing = salePrice - initialPayment - bonusAmount;
+         return Math.max(financing, 0.0);
      }
 
     public void generatePayments() {
         if (interestRate == null || financing == null || monthsPaymentTerm == null) return;
 
         // 1️⃣ Obtener tasa efectiva mensual desde InterestRate
-        double tasaMensual = interestRate.getEffectiveMonthlyRate();
+        double tasaMensual = interestRate.getEffectiveMonthlyRate() / 100;
 
         // 2️⃣ Datos básicos
         int n = monthsPaymentTerm.intValue();
@@ -225,15 +226,15 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             double interes = saldo * tasaMensual;
 
             // ✅ Seguros calculados sobre saldos o montos fijos
-            double lifeInsuranceFee = saldo * (monthlyLifeInsuranceRate != null ? monthlyLifeInsuranceRate : 0.0);
-            double housingInsuranceFee = financing * (monthlyHousingInsuranceRate != null ? monthlyHousingInsuranceRate : 0.0);
+            double lifeInsuranceFee = saldo * (monthlyLifeInsuranceRate / 100);
+            double housingInsuranceFee = financing * (monthlyHousingInsuranceRate / 100);
 
             double amortizacion;
             double totalCuota;
 
             // 🔸 Durante el periodo de gracia
             if (i <= graceMonths) {
-                if (graceType == GracePeriodType.TOTAL) {
+                if (graceType == GracePeriodType.TOTAL && saldo > 0) {
                     // No se paga nada, interés se capitaliza
                     saldo += interes;
                     amortizacion = 0.0;
@@ -286,6 +287,12 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
      * - get credit application by id
      * - create payment plan - DONE TO CHECK
      *  -> calculate van & tir - DONE TO CHECK
+     *
+     *  MISSING
+     *  - check exchange currency functionality
+     *  - update credit evaluation failed
+     *  - get all credit evaluations
+     *  - check credit validation approval
      */
 
 }

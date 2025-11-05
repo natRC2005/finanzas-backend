@@ -18,6 +18,6 @@ public class BonusQueryServiceImpl implements BonusQueryService {
 
     @Override
     public Optional<Bonus> handle(GetBonusByIdQuery query) {
-        return bonusRepository.findBonusById(query.id());
+        return bonusRepository.findById(query.id());
     }
 }
