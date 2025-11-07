@@ -1,6 +1,6 @@
 package com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects;
 
-public enum Capitalization {
+public enum Period {
     DIARIA,
     QUINCENAL,
     MENSUAL,
@@ -10,3 +10,5 @@ public enum Capitalization {
     SEMESTRAL,
     ANUAL
 }
+
+// UPDATE -> change naming to 'Period' so that it applies for TE and TN

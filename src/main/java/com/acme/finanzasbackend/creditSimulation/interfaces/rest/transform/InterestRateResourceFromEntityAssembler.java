@@ -8,7 +8,7 @@ public class InterestRateResourceFromEntityAssembler {
         return new InterestRateResource(
                 entity.getId(),
                 entity.getType().toString(),
-                entity.getCapitalization() != null ? entity.getCapitalization().toString() : null,
+                entity.getPeriod().toString(),
                 entity.getPercentage()
         );
     }

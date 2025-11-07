@@ -74,11 +74,14 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     @Embedded
     private Tir tir;
 
-    private Double monthsPaymentTerm; // months to pay
+    private Double monthsPaymentTerm; // months to pay -> // UPDATE -> ask for years, work on moths
 
     private Double downPaymentPercentage; // initial payment
     private Double financing; // amount to finance in total
     private Double tceaPercentage;
+
+    // UPDATE -> Cok periodo
+    //  -> create entity -> RentIndicators (van, tir, tcea, van)
 
     @OneToMany(mappedBy = "creditApplication", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Payment> payments = new ArrayList<>();
@@ -299,6 +302,10 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
      *  - update credit evaluation failed
      *  - get all credit evaluations
      *  - check credit validation approval
+     *
+     *  // UPDATE -> Add variables -> completely refactor values calculus
+     *      -> remember to consider all kinds of effective rates
+     *      -> adapt the whole excel to code (cries)
      */
 
 }

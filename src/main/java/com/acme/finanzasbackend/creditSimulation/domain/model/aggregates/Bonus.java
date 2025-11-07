@@ -83,3 +83,6 @@ public class Bonus extends AuditableAbstractAggregateRoot<Bonus> {
         }
     }
 }
+
+// UPDATE -> Use for 2 kinds of bonuses, so that the user can choose to take
+// a bonus and the ideal one is applies (compare quantities)

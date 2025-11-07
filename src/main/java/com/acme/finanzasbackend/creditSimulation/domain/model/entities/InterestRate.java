@@ -1,7 +1,7 @@
 package com.acme.finanzasbackend.creditSimulation.domain.model.entities;
 
 import com.acme.finanzasbackend.creditSimulation.domain.model.commands.CreateInterestRateCommand;
-import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.Capitalization;
+import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.Period;
 import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.InterestRateType;
 import com.acme.finanzasbackend.shared.domain.model.entities.AuditableModel;
 import jakarta.persistence.Entity;
@@ -11,15 +11,15 @@ import lombok.Getter;
 @Entity
 public class InterestRate extends AuditableModel {
     private InterestRateType type;
-    private Capitalization capitalization;
+    private Period period;
     private Double percentage;
 
     public InterestRate() {}
 
     public InterestRate(CreateInterestRateCommand command) {
         this.type = InterestRateType.valueOf(command.type());
-        if (this.type == InterestRateType.EFECTIVA) this.capitalization = null;
-        else this.capitalization = Capitalization.valueOf(command.capitalization());
+        if (this.type == InterestRateType.EFECTIVA) this.period = null;
+        else this.period = Period.valueOf(command.period());
         this.percentage = command.percentage();
     }
 
@@ -27,8 +27,8 @@ public class InterestRate extends AuditableModel {
                         String capitalization,
                         Double percentage) {
         this.type = InterestRateType.valueOf(type);
-        if (this.type == InterestRateType.EFECTIVA) this.capitalization = null;
-        else this.capitalization = Capitalization.valueOf(capitalization);
+        if (this.type == InterestRateType.EFECTIVA) this.period = null;
+        else this.period = Period.valueOf(capitalization);
         this.percentage = percentage;
     }
 
@@ -38,7 +38,7 @@ public class InterestRate extends AuditableModel {
             return Math.pow(1 + this.percentage, 1.0 / 12.0) - 1;
         }
 
-        int m = switch (this.capitalization) {
+        int m = switch (this.period) {
             case DIARIA -> 360;
             case QUINCENAL -> 24;
             case MENSUAL -> 12;
