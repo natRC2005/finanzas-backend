@@ -7,7 +7,7 @@ public class CreateInterestRateCommandFromResourceAssembler {
     public static CreateInterestRateCommand toCommandFromResource(CreateInterestRateResource resource) {
         return new CreateInterestRateCommand(
                 resource.type(),
-                resource.capitalization(),
+                resource.period(),
                 resource.percentage()
         );
     }

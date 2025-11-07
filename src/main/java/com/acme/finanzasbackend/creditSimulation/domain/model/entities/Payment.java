@@ -38,3 +38,5 @@ public class Payment extends AuditableModel {
         this.balance = balance;
     }
 }
+
+// UPDATE -> Add excel table attributes
