@@ -252,6 +252,12 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             }
             // 🔹 Después del periodo de gracia
             else {
+                if (i == graceMonths + 1 && graceType == GracePeriodType.TOTAL && graceMonths > 0) {
+                    double saldoPostGracia = saldo;
+                    int remainingMonths = n - graceMonths;
+                    cuotaBase = (saldoPostGracia * tasaMensual * Math.pow(1 + tasaMensual, remainingMonths)) /
+                            (Math.pow(1 + tasaMensual, remainingMonths) - 1);
+                }
                 amortizacion = cuotaBase - interes;
                 saldo -= amortizacion;
                 if (saldo < 0) saldo = 0.0;
