@@ -10,7 +10,7 @@ public record CreateCreditApplicationResource(
         Long currencyId,
         Long financialEntityId,
         String interestRateType,
-        String interestRateCapitalization,
+        String interestRatePeriod,
         Double interestRatePercentage,
         Boolean isBonusRequired,
         String gracePeriodType,
@@ -43,8 +43,8 @@ public record CreateCreditApplicationResource(
         if (interestRateType == null) {
             throw new IllegalArgumentException("InterestRateType cannot be null");
         }
-        if (interestRateType.equals("NOMINAL") && interestRateCapitalization == null) {
-            throw new IllegalArgumentException("Capitalization cannot be null");
+        if (interestRatePeriod == null) {
+            throw new IllegalArgumentException("interestRatePeriod cannot be null");
         }
         if (interestRatePercentage == null || interestRatePercentage < 0) {
             throw new IllegalArgumentException("InterestRatePercentage cannot be negative");

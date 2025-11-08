@@ -24,11 +24,11 @@ public class InterestRate extends AuditableModel {
     }
 
     public InterestRate(String type,
-                        String capitalization,
+                        String period,
                         Double percentage) {
         this.type = InterestRateType.valueOf(type);
         if (this.type == InterestRateType.EFECTIVA) this.period = null;
-        else this.period = Period.valueOf(capitalization);
+        else this.period = Period.valueOf(period);
         this.percentage = percentage;
     }
 

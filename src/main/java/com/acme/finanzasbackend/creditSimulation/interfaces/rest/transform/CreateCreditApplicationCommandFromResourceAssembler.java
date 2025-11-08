@@ -14,9 +14,7 @@ public class CreateCreditApplicationCommandFromResourceAssembler {
                 resource.currencyId(),
                 resource.financialEntityId(),
                 resource.interestRateType(),
-                resource.interestRateCapitalization() != null
-                        ? resource.interestRateCapitalization()
-                        : null,
+                resource.interestRatePeriod(),
                 resource.interestRatePercentage(),
                 resource.isBonusRequired(),
                 resource.gracePeriodType(),
