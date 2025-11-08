@@ -3,6 +3,7 @@ package com.acme.finanzasbackend.housingFinance.domain.model.aggregates;
 import com.acme.finanzasbackend.clientManagement.domain.model.commands.CreateClientCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.commands.CreateHousingCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.commands.UpdateHousingCommand;
+import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.HousingCategory;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.HousingState;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.Province;
 import com.acme.finanzasbackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
@@ -36,6 +37,7 @@ public class Housing extends AuditableAbstractAggregateRoot<Housing> {
     private Integer roomQuantity;
     private Double salePrice;
     private HousingState housingState;
+    private HousingCategory housingCategory;
 
     @ManyToOne
     @JoinColumn(name = "currency_id", nullable = false)
@@ -55,6 +57,7 @@ public class Housing extends AuditableAbstractAggregateRoot<Housing> {
         this.roomQuantity = command.roomQuantity();
         this.salePrice = command.salePrice();
         this.housingState = HousingState.valueOf(command.housingState());
+        this.housingCategory = HousingCategory.valueOf(command.housingCategory());
         this.currency = currency;
     }
 
