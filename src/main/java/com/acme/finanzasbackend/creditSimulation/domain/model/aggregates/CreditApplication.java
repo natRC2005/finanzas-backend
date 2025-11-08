@@ -81,10 +81,10 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     private Double tceaPercentage;
 
     // UPDATE -> Cok periodo
-    //  -> create value object -> RentIndicators (van, tir, tcea, van)
-    //  -> create value object -> InitialCosts (notarial, registral, tasacion, estudio, activacion)
-    //  -> create value object -> PeriodicCosts --- 5 elements
-    //  -> create value object -> Totals --- 6 elements
+    //  -> DONE - create value object -> RentIndicators (van, tir, tcea, van)
+    //  -> DONE - create value object -> InitialCosts (notarial, registral, tasacion, estudio, activacion)
+    //  -> DONE - create value object -> PeriodicCosts --- 5 elements
+    //  -> DONE - create value object -> Totals --- 6 elements
 
     @OneToMany(mappedBy = "creditApplication", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Payment> payments = new ArrayList<>();
