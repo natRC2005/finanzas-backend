@@ -72,6 +72,7 @@ public class Housing extends AuditableAbstractAggregateRoot<Housing> {
         this.roomQuantity = command.roomQuantity();
         this.salePrice = command.salePrice();
         this.housingState = HousingState.valueOf(command.housingState());
+        this.housingCategory = HousingCategory.valueOf(command.housingCategory());
         this.currency = currency;
     }
 
