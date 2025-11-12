@@ -17,6 +17,7 @@ public class UpdateHousingCommandFromResourceAssembler {
                 resource.roomQuantity(),
                 resource.salePrice(),
                 resource.housingState(),
+                resource.housingCategory(),
                 resource.currencyId()
         );
     }

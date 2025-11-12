@@ -18,16 +18,15 @@ public class CreditApplicationResourceFromEntityAssembler {
                 entity.getFinanceEntityApproved().accepted(),
                 entity.getFinanceEntityApproved().reason(),
                 InterestRateResourceFromEntityAssembler.toResourceFromEntity(entity.getInterestRate()),
-                entity.getMonthlyLifeInsuranceRate(),
-                entity.getMonthlyHousingInsuranceRate(),
-                entity.getMonthsPaymentTerm(),
+                GracePeriodResourceFromEntityAssembler.toResourceFromEntity(entity.getGracePeriod()),
+                InitialCostsResourceFromEntityAssembler.toResourceFromEntity(entity.getInitialCosts()),
+                PeriodicCostsResourceFromEntityAssembler.toResourceFromEntity(entity.getPeriodicCosts()),
                 entity.getDownPaymentPercentage(),
                 entity.getFinancing(),
-                entity.getTceaPercentage(),
-                entity.getVan() != null ? entity.getVan().van() : null,
-                entity.getTir() != null ? entity.getTir().tir() : null,
+                entity.getMonthsPaymentTerm(),
+                TotalsResourceFromEntityAssembler.toResourceFromEntity(entity.getTotals()),
+                RentIndicatorsResourceFromEntityAssembler.toResourceFromEntity(entity.getRentIndicators()),
                 BonusResourceFromEntityAssembler.toResourceFromEntity(entity.getBonus()),
-                GracePeriodResourceFromEntityAssembler.toResourceFromEntity(entity.getGracePeriod()),
                 entity.getPayments() != null
                         ? entity.getPayments().stream()
                         .map(PaymentResourceFromEntityAssembler::toResourceFromEntity)

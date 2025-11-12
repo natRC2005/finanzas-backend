@@ -15,6 +15,7 @@ public record HousingResource(
         Integer roomQuantity,
         Double salePrice,
         String housingState,
+        String housingCategory,
         String currencySymbol
 ) {
 }

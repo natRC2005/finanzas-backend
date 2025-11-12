@@ -9,7 +9,8 @@ public class CreateBonusCommandFromResourceAssembler {
         return new CreateBonusCommand(
                 resource.isRequired(),
                 HousingState.valueOf(resource.housingState()),
-                resource.housingSalePrice()
+                resource.housingSalePrice(),
+                resource.currency()
         );
     }
 }

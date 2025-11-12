@@ -8,7 +8,7 @@ public record EvaluateFinanceEntityCommand(
         Double financeAmount,
         Double salary,
         Double downPaymentPercentage,
-        HousingState housingState,
+        Boolean isHousingInProject,
         Integer gracePeriodMonths,
         Boolean isDependent,
         Double workingYears,
@@ -25,8 +25,8 @@ public record EvaluateFinanceEntityCommand(
             throw new IllegalArgumentException("FinanceAmount cannot be null or negative");
         if (downPaymentPercentage == null || downPaymentPercentage < 0)
             throw new IllegalArgumentException("DownPaymentPercentage cannot be null or negative");
-        if (housingState == null)
-            throw new IllegalArgumentException("HousingState cannot be null");
+        if (isHousingInProject == null)
+            throw new IllegalArgumentException("isHousingInProject cannot be null");
         if (gracePeriodMonths == null || gracePeriodMonths < 0)
             throw new IllegalArgumentException("GracePeriodMonths cannot be null or negative");
         if (isDependent == null)

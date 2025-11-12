@@ -18,6 +18,7 @@ public class HousingResourceFromEntityAssembler {
                 entity.getRoomQuantity(),
                 entity.getSalePrice(),
                 entity.getHousingState().toString(),
+                entity.getHousingCategory().toString(),
                 entity.getCurrency().getSymbol()
         );
     }

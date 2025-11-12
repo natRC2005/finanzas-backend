@@ -5,9 +5,7 @@ import com.acme.finanzasbackend.creditSimulation.domain.model.commands.CreateCre
 import com.acme.finanzasbackend.creditSimulation.domain.model.entities.GracePeriod;
 import com.acme.finanzasbackend.creditSimulation.domain.model.entities.InterestRate;
 import com.acme.finanzasbackend.creditSimulation.domain.model.entities.Payment;
-import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.GracePeriodType;
-import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.Tir;
-import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.Van;
+import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.*;
 import com.acme.finanzasbackend.housingFinance.domain.model.aggregates.FinanceEntity;
 import com.acme.finanzasbackend.housingFinance.domain.model.aggregates.Housing;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.FinanceEntityValidationResult;
@@ -65,23 +63,21 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     @JoinColumn(name = "grace_period_id", nullable = false, unique = true)
     private GracePeriod gracePeriod;
 
-    private Double monthlyLifeInsuranceRate;
-    private Double monthlyHousingInsuranceRate;
+    @Embedded
+    private InitialCosts initialCosts;
 
     @Embedded
-    private Van van;
-
-    @Embedded
-    private Tir tir;
-
-    private Double monthsPaymentTerm; // months to pay -> // UPDATE -> ask for years, work on moths
+    private PeriodicCosts periodicCosts;
 
     private Double downPaymentPercentage; // initial payment
     private Double financing; // amount to finance in total
-    private Double tceaPercentage;
+    private Double monthsPaymentTerm; // months to pay -> // UPDATE -> ask for years, work on moths
 
-    // UPDATE -> Cok periodo
-    //  -> create entity -> RentIndicators (van, tir, tcea, van)
+    @Embedded
+    private Totals totals;
+
+    @Embedded
+    private RentIndicators rentIndicators;
 
     @OneToMany(mappedBy = "creditApplication", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Payment> payments = new ArrayList<>();
@@ -103,21 +99,24 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
         this.interestRate = interestRate;
         this.bonus = bonus;
         this.gracePeriod = gracePeriod;
-        this.monthlyLifeInsuranceRate = command.monthlyLifeInsuranceRate();
-        this.monthlyHousingInsuranceRate  = command.monthlyHousingInsuranceRate();
-        this.monthsPaymentTerm = command.monthsPaymentTerm();
+        this.initialCosts = new InitialCosts(command.notaryCost(), command.registryCost(),
+                command.appraisal(), command.studyCommission(), command.activationCommission());
+        this.periodicCosts = new PeriodicCosts(command.periodicCommission(), command.shippingCosts(),
+                command.administrationExpenses(), command.lifeInsurance(), command.riskInsurance());
         this.downPaymentPercentage = command.downPaymentPercentage();
         this.financing = calculateFinancing();
+        this.monthsPaymentTerm = command.monthsPaymentTerm();
         this.financeEntityApproved = getFinanceEntityApproved(command.hasCreditHistory(), hasAnotherHousingFinancing);
         if (this.financeEntityApproved.accepted()){
             generatePayments();
-            this.van = calculateVan();
-            this.tir = calculateTir();
-            this.tceaPercentage = calculateTceaPercentage();
+            this.totals = new Totals(0.0, 0.0,
+                    0.0, 0.0,
+                    0.0, 0.0);
+            this.rentIndicators = new RentIndicators(0.0, 0.0,
+                    0.0, 0.0);
         } else {
-            this.van = null;
-            this.tir = null;
-            this.tceaPercentage = null;
+            this.totals = null;
+            this.rentIndicators = null;
         }
     }
 
@@ -125,162 +124,62 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             Boolean hasCreditHistory, Boolean hasAnotherHousingFinancing)
     {
         boolean isHousingUsed = false;
+        boolean isHousingInProject = false;
         if (this.housing.getHousingState() == HousingState.SEGUNDA) isHousingUsed = true;
+        if (this.housing.getHousingState() == HousingState.EN_PROYECTO) isHousingInProject = true;
         return this.financeEntity.isFinanceEntityAccepted(
                 this.housing.getSalePrice(), this.financing, this.client.getMonthlyIncome(),
-                this.downPaymentPercentage, this.housing.getHousingState(), this.gracePeriod.getMonths(),
+                this.downPaymentPercentage, isHousingInProject, this.gracePeriod.getMonths(),
                 this.client.getIsDependent(), this.client.getWorkingYears(), hasCreditHistory,
                 isHousingUsed, hasAnotherHousingFinancing);
     }
 
-    private Van calculateVan() {
-        if (interestRate == null || payments == null || payments.isEmpty()) return null;
-
-        double tasaMensual = interestRate.getEffectiveMonthlyRate() / 100;
-        double van = -financing; // flujo inicial negativo
-
-        for (Payment payment : payments) {
-            int periodo = payment.getOrderNumber();
-            double flujo = payment.getFee()
-                    + (payment.getLifeInsuranceFee() != null ? payment.getLifeInsuranceFee() : 0.0)
-                    + (payment.getHousingInsuranceFee() != null ? payment.getHousingInsuranceFee() : 0.0);
-            van += flujo / Math.pow(1 + tasaMensual, periodo);
-        }
-
-        return new Van(van);
+    private Double calculateVan() {
+        return 1.0;
     }
 
-    private Tir calculateTir() {
-        if (payments == null || payments.isEmpty() || financing == null || financing <= 0) return null;
-
-        double guessRate = 0.01; // 1% inicial
-        double precision = 1e-7;
-        int maxIterations = 10_000;
-        double rate = guessRate;
-
-        for (int i = 0; i < maxIterations; i++) {
-            double fValue = -financing;
-            double fDerivative = 0.0;
-
-            for (Payment payment : payments) {
-                int t = payment.getOrderNumber();
-                double flujo = payment.getFee()
-                        + (payment.getLifeInsuranceFee() != null ? payment.getLifeInsuranceFee() : 0.0)
-                        + (payment.getHousingInsuranceFee() != null ? payment.getHousingInsuranceFee() : 0.0);
-                fValue += flujo / Math.pow(1 + rate, t);
-                fDerivative += -t * flujo / Math.pow(1 + rate, t + 1);
-            }
-
-            if (Math.abs(fDerivative) < 1e-10) break; // evitar división por 0
-
-            double newRate = rate - fValue / fDerivative;
-            if (Math.abs(newRate - rate) < precision) {
-                return new Tir(newRate);
-            }
-
-            rate = newRate;
-        }
-
-        return new Tir(rate);
+    private Double calculateTir() {
+        return 1.0;
     }
 
     private Double calculateTceaPercentage() {
-        if (tir == null || tir.tir() == null) return 0.0;
+        return 1.0;
+    }
 
-        double tirMensual = tir.tir();
+    private Double calculateFinalCok() {
+        return 0.0;
+    }
 
-        return Math.pow(1 + tirMensual, 12) - 1;
+    private Double getTotalInterest() {
+        return 0.0;
+    }
+
+    private Double getTotalCapitalAmortization() {
+        return 0.0;
+    }
+
+    private Double getTotalLifeInsurance() {
+        return 0.0;
+    }
+
+    private Double getTotalRiskInsurance() {
+        return 0.0;
+    }
+
+    private Double getTotalPeriodCommission() {
+        return 0.0;
+    }
+
+    private Double getTotalAdministrationFee() {
+        return 0.0;
     }
 
      private Double calculateFinancing() {
-         if (this.housing == null || this.bonus == null || this.downPaymentPercentage == null)
-            return 0.0;
-
-         double salePrice = this.housing.getSalePrice();
-         double initialPayment = salePrice * (downPaymentPercentage / 100);
-         double bonusAmount = this.bonus.getGivenAmount();
-         double financing = salePrice - initialPayment - bonusAmount;
-         return Math.max(financing, 0.0);
+         return 0.0;
      }
 
     public void generatePayments() {
-        if (interestRate == null || financing == null || monthsPaymentTerm == null) return;
 
-        // 1️⃣ Obtener tasa efectiva mensual desde InterestRate
-        double tasaMensual = interestRate.getEffectiveMonthlyRate() / 100;
-
-        // 2️⃣ Datos básicos
-        int n = monthsPaymentTerm.intValue();
-        double montoFinanciado = financing;
-        double saldo = montoFinanciado;
-
-        // 3️⃣ Periodo de gracia
-        int graceMonths = gracePeriod != null ? gracePeriod.getMonths() : 0;
-        GracePeriodType graceType = gracePeriod != null ? gracePeriod.getType() : null;
-
-        this.payments.clear();
-
-        // 4️⃣ Cuota base (sin seguros)
-        double cuotaBase = (montoFinanciado * tasaMensual * Math.pow(1 + tasaMensual, n)) /
-                (Math.pow(1 + tasaMensual, n) - 1);
-
-        // 5️⃣ Generar cronograma de pagos
-        for (int i = 1; i <= n; i++) {
-            double interes = saldo * tasaMensual;
-
-            // ✅ Seguros calculados sobre saldos o montos fijos
-            double lifeInsuranceFee = saldo * (monthlyLifeInsuranceRate / 100);
-            double housingInsuranceFee = financing * (monthlyHousingInsuranceRate / 100);
-
-            double amortizacion;
-            double totalCuota;
-
-            // 🔸 Durante el periodo de gracia
-            if (i <= graceMonths) {
-                if (graceType == GracePeriodType.TOTAL && saldo > 0) {
-                    // No se paga nada, interés se capitaliza
-                    saldo += interes;
-                    amortizacion = 0.0;
-                    totalCuota = 0.0;
-                } else if (graceType == GracePeriodType.PARCIAL) {
-                    // Solo se pagan intereses + seguros
-                    amortizacion = 0.0;
-                    totalCuota = interes + lifeInsuranceFee + housingInsuranceFee;
-                } else {
-                    // Caso no definido → pago normal
-                    amortizacion = cuotaBase - interes;
-                    saldo -= amortizacion;
-                    totalCuota = cuotaBase + lifeInsuranceFee + housingInsuranceFee;
-                }
-            }
-            // 🔹 Después del periodo de gracia
-            else {
-                if (i == graceMonths + 1 && graceType == GracePeriodType.TOTAL && graceMonths > 0) {
-                    double saldoPostGracia = saldo;
-                    int remainingMonths = n - graceMonths;
-                    cuotaBase = (saldoPostGracia * tasaMensual * Math.pow(1 + tasaMensual, remainingMonths)) /
-                            (Math.pow(1 + tasaMensual, remainingMonths) - 1);
-                }
-                amortizacion = cuotaBase - interes;
-                saldo -= amortizacion;
-                if (saldo < 0) saldo = 0.0;
-                totalCuota = cuotaBase + lifeInsuranceFee + housingInsuranceFee;
-            }
-
-            // 🧾 Crear la cuota
-            Payment payment = new Payment(
-                    i,                      // número de cuota
-                    totalCuota,             // cuota total a pagar
-                    interes,                // interés del mes
-                    amortizacion,           // amortización del mes
-                    lifeInsuranceFee,       // seguro desgravamen
-                    housingInsuranceFee,    // seguro inmueble
-                    saldo                   // saldo restante
-            );
-
-            payment.setCreditApplication(this);
-            this.payments.add(payment);
-        }
     }
 
     public void removePayment(Payment payment) {

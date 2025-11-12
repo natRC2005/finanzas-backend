@@ -18,6 +18,7 @@ public class ClientResourceFromEntityAssembler {
                 entity.getMonthlyIncome(),
                 entity.getIsDependent(),
                 entity.getWorkingYears(),
+                entity.getIsIntegrator(),
                 entity.getCurrency().getSymbol()
         );
     }

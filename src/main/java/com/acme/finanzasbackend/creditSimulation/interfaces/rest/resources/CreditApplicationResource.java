@@ -14,16 +14,15 @@ public record CreditApplicationResource(
         Boolean financeEntityApproved,
         String financeEntityReason,
         InterestRateResource interestRate,
-        Double monthlyLifeInsuranceRate,
-        Double monthlyHousingInsuranceRate,
-        Double monthsPaymentTerm,
+        GracePeriodResource gracePeriod,
+        InitialCostsResource initialCosts,
+        PeriodicCostsResource periodicCosts,
         Double downPaymentPercentage,
         Double financing,
-        Double tceaPercentage,
-        Double van,
-        Double tir,
+        Double monthsPaymentTerm,
+        TotalsResource totals,
+        RentIndicatorsResource rentIndicators,
         BonusResource bonus,
-        GracePeriodResource gracePeriod,
         List<PaymentResource> payments
 ) {
 }

@@ -12,6 +12,7 @@ public record UpdateHousingCommand(
         Integer roomQuantity,
         Double salePrice,
         String housingState,
+        String housingCategory,
         Long currencyId
 ) {
     public UpdateHousingCommand {
@@ -44,6 +45,9 @@ public record UpdateHousingCommand(
         }
         if (housingState == null) {
             throw new IllegalArgumentException("housingState can't be null");
+        }
+        if (housingCategory == null) {
+            throw new IllegalArgumentException("housingCategory can't be null");
         }
         if (currencyId == null || currencyId <= 0) {
             throw new IllegalArgumentException("currencyId can't be null or less than or equal to 0");
