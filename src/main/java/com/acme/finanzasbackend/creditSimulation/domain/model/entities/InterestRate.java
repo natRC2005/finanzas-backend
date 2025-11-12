@@ -13,6 +13,7 @@ public class InterestRate extends AuditableModel {
     private InterestRateType type;
     private Period period;
     private Double percentage;
+    private Double tea;
 
     public InterestRate() {}
 
