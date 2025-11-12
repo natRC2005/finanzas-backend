@@ -12,7 +12,7 @@ public class EvaluateFinanceEntityCommandFromResourceAssembler {
                 resource.financeAmount(),
                 resource.salary(),
                 resource.downPaymentPercentage(),
-                HousingState.valueOf(resource.housingState()),
+                resource.isHousingInProject(),
                 resource.gracePeriodMonths(),
                 resource.isDependent(),
                 resource.workingYears(),

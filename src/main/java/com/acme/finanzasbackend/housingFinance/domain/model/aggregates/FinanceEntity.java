@@ -80,7 +80,7 @@ public class FinanceEntity extends AuditableAbstractAggregateRoot<FinanceEntity>
     public FinanceEntityValidationResult isFinanceEntityAccepted(
             Double housingPrice, Double financeAmount,
             Double salary, Double downPaymentPercentage,
-            HousingState housingState, Integer gracePeriodMonths,
+            Boolean isHousingInProject, Integer gracePeriodMonths,
             Boolean isDependent, Double workingYears,
             Boolean hasCreditHistory, Boolean isHousingUsed,
             Boolean hasAnotherHousingFinancing) {
@@ -102,9 +102,9 @@ public class FinanceEntity extends AuditableAbstractAggregateRoot<FinanceEntity>
             return new FinanceEntityValidationResult(false, "La cuota inicial es menor al porcentaje mínimo permitido.");
         if (this.maximumDownPaymentPercentage != null && downPaymentPercentage > this.maximumDownPaymentPercentage)
             return new FinanceEntityValidationResult(false, "La cuota inicial supera el porcentaje máximo permitido.");
-        if (housingState == HousingState.EN_PROYECTO && this.inProjectMaxGracePeriodMonths != null && gracePeriodMonths > this.inProjectMaxGracePeriodMonths)
+        if (isHousingInProject && this.inProjectMaxGracePeriodMonths != null && gracePeriodMonths > this.inProjectMaxGracePeriodMonths)
             return new FinanceEntityValidationResult(false, "El periodo de gracia excede el máximo permitido para viviendas en proyecto.");
-        if (housingState != HousingState.EN_PROYECTO && this.generalMaxGracePeriodMonths != null && gracePeriodMonths > this.generalMaxGracePeriodMonths)
+        if (!isHousingInProject && this.generalMaxGracePeriodMonths != null && gracePeriodMonths > this.generalMaxGracePeriodMonths)
             return new FinanceEntityValidationResult(false, "El periodo de gracia excede el máximo permitido para viviendas en general.");
         if (isDependent) {
             if (this.minYearsDependentEmploymentTenure != null && workingYears < this.minYearsDependentEmploymentTenure)
@@ -139,11 +139,11 @@ public class FinanceEntity extends AuditableAbstractAggregateRoot<FinanceEntity>
             return new FinanceEntityValidationResult(false, "La cuota inicial es menor al porcentaje mínimo permitido.");
         if (this.maximumDownPaymentPercentage != null && command.downPaymentPercentage() > this.maximumDownPaymentPercentage)
             return new FinanceEntityValidationResult(false, "La cuota inicial supera el porcentaje máximo permitido.");
-        if (command.housingState() == HousingState.EN_PROYECTO &&
+        if (command.isHousingInProject() &&
                 this.inProjectMaxGracePeriodMonths != null &&
                 command.gracePeriodMonths() > this.inProjectMaxGracePeriodMonths)
             return new FinanceEntityValidationResult(false, "El periodo de gracia excede el máximo permitido para viviendas en proyecto.");
-        if (command.housingState() != HousingState.EN_PROYECTO &&
+        if (!command.isHousingInProject() &&
                 this.generalMaxGracePeriodMonths != null &&
                 command.gracePeriodMonths() > this.generalMaxGracePeriodMonths)
             return new FinanceEntityValidationResult(false, "El periodo de gracia excede el máximo permitido para viviendas en general.");
