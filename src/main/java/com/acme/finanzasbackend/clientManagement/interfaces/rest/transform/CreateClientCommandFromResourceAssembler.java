@@ -17,6 +17,7 @@ public class CreateClientCommandFromResourceAssembler {
                 resource.monthlyIncome(),
                 resource.isDependent(),
                 resource.workingYears(),
+                resource.isIntegrator(),
                 resource.currencyId()
         );
     }

@@ -33,6 +33,8 @@ public class Client extends AuditableAbstractAggregateRoot<Client> {
     private Boolean isDependent;
     private Double workingYears;
 
+    private Boolean isIntegrator;
+
     @ManyToOne
     @JoinColumn(name = "currency_id", nullable = false)
     private Currency currency;
@@ -51,7 +53,11 @@ public class Client extends AuditableAbstractAggregateRoot<Client> {
         this.monthlyIncome = command.monthlyIncome();
         this.isDependent = command.isDependent();
         this.workingYears = command.workingYears();
+        this.isIntegrator = command.isIntegrator();
         this.currency = currency;
+        Double salary = this.monthlyIncome;
+        if (this.currency.getId() == 2) salary = this.currency.exchangeCurrency(monthlyIncome);
+        if (this.age >= 65 || salary <= 4746.00) this.isIntegrator  = true;
     }
 
     public void modifyClient(UpdateClientCommand command, Currency currency) {
@@ -65,7 +71,11 @@ public class Client extends AuditableAbstractAggregateRoot<Client> {
         this.monthlyIncome = command.monthlyIncome();
         this.isDependent = command.isDependent();
         this.workingYears = command.workingYears();
+        this.isIntegrator = command.isIntegrator();
         this.currency = currency;
+        Double salary = this.monthlyIncome;
+        if (this.currency.getId() == 2) salary = this.currency.exchangeCurrency(monthlyIncome);
+        if (this.age >= 65 || salary <= 4746.00) this.isIntegrator  = true;
     }
 
     public void exchangeSalaryCurrency(Currency currency) {
