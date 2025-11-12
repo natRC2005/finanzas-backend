@@ -11,6 +11,7 @@ public record UpdateClientResource(
         Double monthlyIncome,
         Boolean isDependent,
         Double workingYears,
+        Boolean isIntegrator,
         Long currencyId
 ) {
     public UpdateClientResource {
@@ -40,6 +41,9 @@ public record UpdateClientResource(
         }
         if (workingYears == null || workingYears < 0) {
             throw new IllegalArgumentException("workingYears can't be null or less than 0");
+        }
+        if (isIntegrator == null) {
+            throw new IllegalArgumentException("isIntegrator can't be null or empty");
         }
         if (currencyId == null) {
             throw new IllegalArgumentException("currencyId can't be null or empty");

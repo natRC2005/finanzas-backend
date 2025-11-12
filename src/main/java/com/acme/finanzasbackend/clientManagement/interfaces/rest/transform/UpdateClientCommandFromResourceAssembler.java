@@ -17,6 +17,7 @@ public class UpdateClientCommandFromResourceAssembler {
                 resource.monthlyIncome(),
                 resource.isDependent(),
                 resource.workingYears(),
+                resource.isIntegrator(),
                 resource.currencyId()
         );
     }
