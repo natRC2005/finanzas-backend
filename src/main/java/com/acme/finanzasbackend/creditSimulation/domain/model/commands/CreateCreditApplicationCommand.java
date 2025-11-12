@@ -15,10 +15,18 @@ public record CreateCreditApplicationCommand(
         Boolean isBonusRequired,
         String gracePeriodType,
         Integer gracePeriodMonths,
+        Double notaryCost,
+        Double registryCost,
+        Double appraisal, // tasacion
+        Double studyCommission,
+        Double activationCommission,
+        Double periodicCommission,
+        Double shippingCosts, // portes
+        Double administrationExpenses,
+        Double lifeInsurance, // desgravamen
+        Double riskInsurance,
         Double monthsPaymentTerm,
         Double downPaymentPercentage,
-        Double monthlyLifeInsuranceRate,
-        Double monthlyHousingInsuranceRate,
         Boolean hasCreditHistory
 ) {
     public CreateCreditApplicationCommand {
@@ -58,17 +66,41 @@ public record CreateCreditApplicationCommand(
         if (gracePeriodMonths == null || gracePeriodMonths < 1) {
             throw new IllegalArgumentException("gracePeriodMonths must not be less than 1");
         }
+        if (notaryCost == null || notaryCost < 0) {
+            throw new IllegalArgumentException("notaryCost cannot be negative");
+        }
+        if (registryCost == null || registryCost < 0) {
+            throw new IllegalArgumentException("registryCost cannot be negative");
+        }
+        if (appraisal == null || appraisal < 0) {
+            throw new IllegalArgumentException("appraisal cannot be negative");
+        }
+        if (studyCommission == null || studyCommission < 0) {
+            throw new IllegalArgumentException("studyCommission cannot be negative");
+        }
+        if (activationCommission == null || activationCommission < 0) {
+            throw new IllegalArgumentException("activationCommission cannot be negative");
+        }
+        if (periodicCommission == null || periodicCommission < 0) {
+            throw new IllegalArgumentException("periodicCommission cannot be negative");
+        }
+        if (shippingCosts == null || shippingCosts < 0) {
+            throw new IllegalArgumentException("shippingCosts cannot be negative");
+        }
+        if (administrationExpenses == null || administrationExpenses < 0) {
+            throw new IllegalArgumentException("administrationExpenses cannot be negative");
+        }
+        if (lifeInsurance == null || lifeInsurance < 0) {
+            throw new IllegalArgumentException("lifeInsurance cannot be negative");
+        }
+        if (riskInsurance == null || riskInsurance < 0) {
+            throw new IllegalArgumentException("riskInsurance cannot be negative");
+        }
         if (monthsPaymentTerm == null || monthsPaymentTerm < 1) {
             throw new IllegalArgumentException("monthsPaymentTerm must not be less than 1");
         }
         if (downPaymentPercentage == null || downPaymentPercentage < 0) {
             throw new IllegalArgumentException("downPaymentPercentage cannot be negative");
-        }
-        if (monthlyLifeInsuranceRate == null || monthlyLifeInsuranceRate < 0) {
-            throw new IllegalArgumentException("monthlyLifeInsuranceRate cannot be negative");
-        }
-        if (monthlyHousingInsuranceRate == null || monthlyHousingInsuranceRate < 0) {
-            throw new IllegalArgumentException("monthlyHousingInsuranceRate cannot be negative");
         }
         if (hasCreditHistory == null) {
             throw new IllegalArgumentException("hasCreditHistory cannot be null");

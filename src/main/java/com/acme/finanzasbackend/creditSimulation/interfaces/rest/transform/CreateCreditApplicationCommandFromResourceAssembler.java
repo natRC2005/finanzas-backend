@@ -19,11 +19,21 @@ public class CreateCreditApplicationCommandFromResourceAssembler {
                 resource.isBonusRequired(),
                 resource.gracePeriodType(),
                 resource.gracePeriodMonths(),
+                resource.notaryCost(),
+                resource.registryCost(),
+                resource.appraisal(),
+                resource.studyCommission(),
+                resource.activationCommission(),
+                resource.periodicCommission(),
+                resource.shippingCosts(),
+                resource.administrationExpenses(),
+                resource.lifeInsurance(),
+                resource.riskInsurance(),
                 resource.monthsPaymentTerm(),
                 resource.downPaymentPercentage(),
-                resource.monthlyLifeInsuranceRate(),
-                resource.monthlyHousingInsuranceRate(),
                 resource.hasCreditHistory()
         );
     }
 }
+
+// UPDATE -> You should ask for years and convert to months at monthsPaymentTerm
