@@ -83,9 +83,10 @@ public class CreditApplicationCommandServiceImpl implements CreditApplicationCom
                 housing.getSalePrice(), currency, client.getIsIntegrator());
 
         var gracePeriodValidTime = command.gracePeriodMonths();
-        if (housing.getHousingState() == HousingState.NUEVO ||
-                housing.getHousingState() == HousingState.SEGUNDA) {
-            gracePeriodValidTime = 0;
+        if ((housing.getHousingState() == HousingState.EN_PROYECTO ||
+                housing.getHousingState() == HousingState.EN_CONSTRUCCION) &&
+                gracePeriodValidTime > 6) {
+            gracePeriodValidTime = 6;
         }
         var gracePeriod = new GracePeriod(command.gracePeriodType(), gracePeriodValidTime);
 
