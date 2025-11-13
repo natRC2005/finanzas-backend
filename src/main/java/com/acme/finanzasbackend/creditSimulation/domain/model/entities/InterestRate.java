@@ -22,6 +22,7 @@ public class InterestRate extends AuditableModel {
         if (this.type == InterestRateType.EFECTIVA) this.period = null;
         else this.period = Period.valueOf(command.period());
         this.percentage = command.percentage();
+        this.tea = 0.0;
     }
 
     public InterestRate(String type,
