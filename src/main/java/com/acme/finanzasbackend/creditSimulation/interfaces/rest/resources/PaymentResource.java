@@ -1,13 +1,19 @@
 package com.acme.finanzasbackend.creditSimulation.interfaces.rest.resources;
 
+import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.GracePeriodType;
+import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.PeriodicCosts;
+
 public record PaymentResource(
         Long id,
         Integer orderNumber,
-        Double fee,
+        Double tem, // Tasa Efectiva Mensual
+        GracePeriodType gracePeriodType,
+        Double initialBalance, // Saldo Inicial
         Double interest,
+        Double fee, // Cuota
         Double amortization,
-        Double lifeInsuranceFee,
-        Double housingInsuranceFee,
-        Double balance
+        PeriodicCosts periodicCosts,
+        Double finalBalance, // Saldo Final
+        Double cashFlow // Flujo
 ) {
 }
