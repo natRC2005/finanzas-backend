@@ -29,11 +29,9 @@ public class CreateCreditApplicationCommandFromResourceAssembler {
                 resource.administrationExpenses(),
                 resource.lifeInsurance(),
                 resource.riskInsurance(),
-                resource.monthsPaymentTerm(),
+                resource.yearsPaymentTerm(),
                 resource.downPaymentPercentage(),
                 resource.hasCreditHistory()
         );
     }
 }
-
-// UPDATE -> You should ask for years and convert to months at monthsPaymentTerm

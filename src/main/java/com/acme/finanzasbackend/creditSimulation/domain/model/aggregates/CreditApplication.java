@@ -105,7 +105,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
                 command.administrationExpenses(), command.lifeInsurance(), command.riskInsurance());
         this.downPaymentPercentage = command.downPaymentPercentage();
         this.financing = calculateFinancing();
-        this.monthsPaymentTerm = command.monthsPaymentTerm();
+        this.monthsPaymentTerm = command.yearsPaymentTerm() * 12;
         this.financeEntityApproved = getFinanceEntityApproved(command.hasCreditHistory(), hasAnotherHousingFinancing);
         if (this.financeEntityApproved.accepted()){
             generatePayments();
