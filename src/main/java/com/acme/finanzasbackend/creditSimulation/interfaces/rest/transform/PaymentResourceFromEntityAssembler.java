@@ -8,12 +8,15 @@ public class PaymentResourceFromEntityAssembler {
         return new PaymentResource(
                 entity.getId(),
                 entity.getOrderNumber(),
-                entity.getFee(),
+                entity.getTem(),
+                entity.getGracePeriodType(),
+                entity.getInitialBalance(),
                 entity.getInterest(),
+                entity.getFee(),
                 entity.getAmortization(),
-                entity.getLifeInsuranceFee(),
-                entity.getHousingInsuranceFee(),
-                entity.getBalance()
+                entity.getPeriodicCosts(),
+                entity.getFinalBalance(),
+                entity.getCashFlow()
         );
     }
 }

@@ -25,7 +25,7 @@ public record CreateCreditApplicationResource(
         Double administrationExpenses,
         Double lifeInsurance, // desgravamen
         Double riskInsurance,
-        Double monthsPaymentTerm,
+        Double yearsPaymentTerm,
         Double downPaymentPercentage,
         Boolean hasCreditHistory
 ) {
@@ -63,8 +63,8 @@ public record CreateCreditApplicationResource(
         if (gracePeriodType == null) {
             throw new IllegalArgumentException("gracePeriodType must not be null");
         }
-        if (gracePeriodMonths == null || gracePeriodMonths < 1) {
-            throw new IllegalArgumentException("gracePeriodMonths must not be less than 1");
+        if (gracePeriodMonths == null || gracePeriodMonths < 0) {
+            throw new IllegalArgumentException("gracePeriodMonths must not be less than 0");
         }
         if (notaryCost == null || notaryCost < 0) {
             throw new IllegalArgumentException("notaryCost cannot be negative");
@@ -96,8 +96,8 @@ public record CreateCreditApplicationResource(
         if (riskInsurance == null || riskInsurance < 0) {
             throw new IllegalArgumentException("riskInsurance cannot be negative");
         }
-        if (monthsPaymentTerm == null || monthsPaymentTerm < 1) {
-            throw new IllegalArgumentException("monthsPaymentTerm must not be less than 1");
+        if (yearsPaymentTerm == null || yearsPaymentTerm < 1) {
+            throw new IllegalArgumentException("yearsPaymentTerm must not be less than 1");
         }
         if (downPaymentPercentage == null || downPaymentPercentage < 0) {
             throw new IllegalArgumentException("downPaymentPercentage cannot be negative");

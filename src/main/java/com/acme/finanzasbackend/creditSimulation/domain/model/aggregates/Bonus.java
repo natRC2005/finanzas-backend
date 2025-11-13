@@ -2,6 +2,7 @@ package com.acme.finanzasbackend.creditSimulation.domain.model.aggregates;
 
 import com.acme.finanzasbackend.creditSimulation.domain.model.commands.CreateBonusCommand;
 import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.BonusType;
+import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.HousingCategory;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.HousingState;
 import com.acme.finanzasbackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import com.acme.finanzasbackend.shared.domain.model.entities.Currency;
@@ -18,44 +19,102 @@ public class Bonus extends AuditableAbstractAggregateRoot<Bonus> {
     private Double givenAmount;
     private BonusType bonusType;
 
-    // Convert to soles everytime -> compare currency
-
     public Bonus() {}
 
     // Ask for Housing Category
 
-    public Bonus(Boolean isRequired, HousingState housingState, Double housingSalePrice, Currency currency) {
+    public Bonus(Boolean isRequired, HousingCategory housingCategory,
+                 Double housingSalePrice, Currency currency, Boolean isIntegrator) {
         if (isRequired) {
             Double salePrice = getHousingSalePriceInSoles(currency, housingSalePrice);
             if (salePrice > 68800.00 && salePrice <= 98100.00) {
                 this.isApplied = true;
-                if (housingState == HousingState.NUEVO || housingState == HousingState.SEGUNDA) {
-                    // this.bonusType = Bo
-                    this.givenAmount = 33700.00;
+                if (housingCategory == HousingCategory.TRADICIONAL) {
+                    if (isIntegrator) {
+                        this.bonusType = BonusType.INTEGRADOR_TRADICIONAL;
+                        this.givenAmount = 31000.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_TRADICIONAL;
+                        this.givenAmount = 27400.00;
+                    }
+                } else {
+                    if (isIntegrator) {
+                        this.bonusType = BonusType.INTEGRADOR_SOSTENIBLE;
+                        this.givenAmount = 37300.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_SOSTENIBLE;
+                        this.givenAmount = 33700.00;
+                    }
                 }
-                else this.givenAmount = 27400.00;
             }
             else if (salePrice > 98100.00 && salePrice <= 146900.00) {
                 this.isApplied = true;
-                if (housingState == HousingState.NUEVO) this.givenAmount = 29100.00;
-                else this.givenAmount = 22800.00;
+                if (housingCategory == HousingCategory.TRADICIONAL) {
+                    if (isIntegrator) {
+                        this.bonusType = BonusType.INTEGRADOR_TRADICIONAL;
+                        this.givenAmount = 26400.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_TRADICIONAL;
+                        this.givenAmount = 22800.00;
+                    }
+                } else {
+                    if (isIntegrator) {
+                        this.bonusType = BonusType.INTEGRADOR_SOSTENIBLE;
+                        this.givenAmount = 32700.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_SOSTENIBLE;
+                        this.givenAmount = 29100.00;
+                    }
+                }
             }
             else if (salePrice > 146900.00 && salePrice <= 244600.00) {
                 this.isApplied = true;
-                if (housingState == HousingState.NUEVO) this.givenAmount = 27200.00;
-                else this.givenAmount = 20900.00;
+                if (housingCategory == HousingCategory.TRADICIONAL) {
+                    if (isIntegrator) {
+                        this.bonusType = BonusType.INTEGRADOR_TRADICIONAL;
+                        this.givenAmount = 24500.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_TRADICIONAL;
+                        this.givenAmount = 20900.00;
+                    }
+                } else {
+                    if (isIntegrator) {
+                        this.bonusType = BonusType.INTEGRADOR_SOSTENIBLE;
+                        this.givenAmount = 30800.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_SOSTENIBLE;
+                        this.givenAmount = 27200.00;
+                    }
+                }
             }
             else if (salePrice > 244600.00 && salePrice <= 362100.00) {
                 this.isApplied = true;
-                if (housingState == HousingState.NUEVO) this.givenAmount = 14100.00;
-                else this.givenAmount = 7800.00;
+                if (housingCategory == HousingCategory.TRADICIONAL) {
+                    if (isIntegrator) {
+                        this.bonusType = BonusType.INTEGRADOR_TRADICIONAL;
+                        this.givenAmount = 11400.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_TRADICIONAL;
+                        this.givenAmount = 7800.00;
+                    }
+                } else {
+                    if (isIntegrator) {
+                        this.bonusType = BonusType.INTEGRADOR_SOSTENIBLE;
+                        this.givenAmount = 17700.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_SOSTENIBLE;
+                        this.givenAmount = 14100.00;
+                    }
+                }
             }
             else {
+                this.bonusType = null;
                 this.isApplied = false;
                 this.givenAmount = 0.00;
             }
         }
         else {
+            this.bonusType = null;
             this.isApplied = false;
             this.givenAmount = 0.00;
         }
@@ -63,32 +122,95 @@ public class Bonus extends AuditableAbstractAggregateRoot<Bonus> {
 
     public Bonus(CreateBonusCommand command) {
         if (command.isRequired()) {
-            if (command.housingSalePrice() > 68800.00 && command.housingSalePrice() <= 98100.00) {
+            Double salePrice = getHousingSalePriceInSoles(command.currency(), command.housingSalePrice());
+            if (salePrice > 68800.00 && salePrice <= 98100.00) {
                 this.isApplied = true;
-                if (command.housingState() == HousingState.NUEVO) this.givenAmount = 33700.00;
-                else this.givenAmount = 27400.00;
+                if (command.housingCategory() == HousingCategory.TRADICIONAL) {
+                    if (command.isIntegrator()) {
+                        this.bonusType = BonusType.INTEGRADOR_TRADICIONAL;
+                        this.givenAmount = 31000.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_TRADICIONAL;
+                        this.givenAmount = 27400.00;
+                    }
+                } else {
+                    if (command.isIntegrator()) {
+                        this.bonusType = BonusType.INTEGRADOR_SOSTENIBLE;
+                        this.givenAmount = 37300.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_SOSTENIBLE;
+                        this.givenAmount = 33700.00;
+                    }
+                }
             }
-            else if (command.housingSalePrice() > 98100.00 && command.housingSalePrice() <= 146900.00) {
+            else if (salePrice > 98100.00 && salePrice <= 146900.00) {
                 this.isApplied = true;
-                if (command.housingState() == HousingState.NUEVO) this.givenAmount = 29100.00;
-                else this.givenAmount = 22800.00;
+                if (command.housingCategory() == HousingCategory.TRADICIONAL) {
+                    if (command.isIntegrator()) {
+                        this.bonusType = BonusType.INTEGRADOR_TRADICIONAL;
+                        this.givenAmount = 26400.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_TRADICIONAL;
+                        this.givenAmount = 22800.00;
+                    }
+                } else {
+                    if (command.isIntegrator()) {
+                        this.bonusType = BonusType.INTEGRADOR_SOSTENIBLE;
+                        this.givenAmount = 32700.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_SOSTENIBLE;
+                        this.givenAmount = 29100.00;
+                    }
+                }
             }
-            else if (command.housingSalePrice() > 146900.00 && command.housingSalePrice() <= 244600.00) {
+            else if (salePrice > 146900.00 && salePrice <= 244600.00) {
                 this.isApplied = true;
-                if (command.housingState() == HousingState.NUEVO) this.givenAmount = 27200.00;
-                else this.givenAmount = 20900.00;
+                if (command.housingCategory() == HousingCategory.TRADICIONAL) {
+                    if (command.isIntegrator()) {
+                        this.bonusType = BonusType.INTEGRADOR_TRADICIONAL;
+                        this.givenAmount = 24500.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_TRADICIONAL;
+                        this.givenAmount = 20900.00;
+                    }
+                } else {
+                    if (command.isIntegrator()) {
+                        this.bonusType = BonusType.INTEGRADOR_SOSTENIBLE;
+                        this.givenAmount = 30800.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_SOSTENIBLE;
+                        this.givenAmount = 27200.00;
+                    }
+                }
             }
-            else if (command.housingSalePrice() > 244600.00 && command.housingSalePrice() <= 362100.00) {
+            else if (salePrice > 244600.00 && salePrice <= 362100.00) {
                 this.isApplied = true;
-                if (command.housingState() == HousingState.NUEVO) this.givenAmount = 14100.00;
-                else this.givenAmount = 7800.00;
+                if (command.housingCategory() == HousingCategory.TRADICIONAL) {
+                    if (command.isIntegrator()) {
+                        this.bonusType = BonusType.INTEGRADOR_TRADICIONAL;
+                        this.givenAmount = 11400.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_TRADICIONAL;
+                        this.givenAmount = 7800.00;
+                    }
+                } else {
+                    if (command.isIntegrator()) {
+                        this.bonusType = BonusType.INTEGRADOR_SOSTENIBLE;
+                        this.givenAmount = 17700.00;
+                    } else {
+                        this.bonusType = BonusType.VIVIENDA_SOSTENIBLE;
+                        this.givenAmount = 14100.00;
+                    }
+                }
             }
             else {
+                this.bonusType = null;
                 this.isApplied = false;
                 this.givenAmount = 0.00;
             }
         }
         else {
+            this.bonusType = null;
             this.isApplied = false;
             this.givenAmount = 0.00;
         }
@@ -99,6 +221,3 @@ public class Bonus extends AuditableAbstractAggregateRoot<Bonus> {
         return currency.exchangeCurrency(housingSalePrice);
     }
 }
-
-// UPDATE -> Use for 2 kinds of bonuses, so that the user can choose to take
-// a bonus and the ideal one is applies (compare quantities)

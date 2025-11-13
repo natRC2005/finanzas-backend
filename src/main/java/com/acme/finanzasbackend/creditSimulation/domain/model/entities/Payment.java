@@ -1,6 +1,8 @@
 package com.acme.finanzasbackend.creditSimulation.domain.model.entities;
 
 import com.acme.finanzasbackend.creditSimulation.domain.model.aggregates.CreditApplication;
+import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.GracePeriodType;
+import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.PeriodicCosts;
 import com.acme.finanzasbackend.shared.domain.model.entities.AuditableModel;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -13,12 +15,15 @@ import lombok.Setter;
 @Entity
 public class Payment extends AuditableModel {
     private Integer orderNumber;
-    private Double fee;
+    private Double tem; // Tasa Efectiva Mensual
+    private GracePeriodType gracePeriodType;
+    private Double initialBalance; // Saldo Inicial
     private Double interest;
+    private Double fee; // Cuota
     private Double amortization;
-    private Double lifeInsuranceFee;
-    private Double housingInsuranceFee;
-    private Double balance;
+    private PeriodicCosts periodicCosts;
+    private Double finalBalance; // Saldo Final
+    private Double cashFlow; // Flujo
 
     @ManyToOne
     @JoinColumn(name = "credit_application_id", nullable = false)
@@ -26,17 +31,20 @@ public class Payment extends AuditableModel {
 
     public Payment() {}
 
-    public Payment(Integer orderNumber, Double fee, Double interest,
-                   Double amortization, Double lifeInsuranceFee,
-                   Double housingInsuranceFee, Double balance) {
+    public Payment(Integer orderNumber, Double tem,
+                   GracePeriodType gracePeriodType, Double initialBalance,
+                   Double interest, Double fee,
+                   Double amortization, PeriodicCosts periodicCosts,
+                   Double finalBalance) {
         this.orderNumber = orderNumber;
-        this.fee = fee;
+        this.tem = tem;
+        this.gracePeriodType = gracePeriodType;
+        this.initialBalance = initialBalance;
         this.interest = interest;
+        this.fee = fee;
         this.amortization = amortization;
-        this.lifeInsuranceFee = lifeInsuranceFee;
-        this.housingInsuranceFee = housingInsuranceFee;
-        this.balance = balance;
+        this.periodicCosts = periodicCosts;
+        this.finalBalance = finalBalance;
+        this.cashFlow = this.initialBalance - this.finalBalance;
     }
 }
-
-// UPDATE -> Add excel table attributes
