@@ -6,3 +6,5 @@ public enum HousingState {
     NUEVO, // BIEN TERMINADO
     SEGUNDA // BIEN TERMINADO
 }
+
+// UPDATE -> Missing GracePeriod Validation

@@ -25,7 +25,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-public class CreditApplication extends AuditableAbstractAggregateRoot<CreditApplication> {  // save with local storage
+public class CreditApplication extends AuditableAbstractAggregateRoot<CreditApplication> {
     @NotNull
     @Embedded
     private RealStateCompanyId realStateCompanyId;
@@ -71,7 +71,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
 
     private Double downPaymentPercentage; // initial payment
     private Double financing; // amount to finance in total
-    private Double monthsPaymentTerm; // months to pay -> // UPDATE -> ask for years, work on moths
+    private Double monthsPaymentTerm; // months to pay
 
     @Embedded
     private Totals totals;
@@ -204,7 +204,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
      *
      *  // UPDATE -> Add variables -> completely refactor values calculus
      *      -> remember to consider all kinds of effective rates
-     *      -> adapt the whole excel to code (cries)
+     *      -> adapt the whole Excel to code (cries)
      */
 
 }

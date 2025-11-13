@@ -77,9 +77,10 @@ public class CreditApplicationCommandServiceImpl implements CreditApplicationCom
                 .orElseThrow(() -> new IllegalArgumentException("Financial entity not found with ID: " + command.financialEntityId()));
 
         var interestRate = new InterestRate(command.interestRateType(), command.interestRatePeriod(), command.interestRatePercentage());
-        
-        // UPDATE -> Check bonus construction
-        var bonus = new Bonus(command.isBonusRequired(), housing.getHousingState(), housing.getSalePrice(), currency);
+
+        var bonus = new Bonus(command.isBonusRequired(), housing.getHousingCategory(),
+                housing.getSalePrice(), currency, client.getIsIntegrator());
+
         var gracePeriod = new GracePeriod(command.gracePeriodType(), command.gracePeriodMonths());
 
         boolean hasAnotherHousingFinancing = creditApplicationRepository.existsByClient(client);

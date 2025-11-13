@@ -8,7 +8,8 @@ public class BonusResourceFromEntityAssembler {
         return new BonusResource(
                 entity.getId(),
                 entity.getIsApplied(),
-                entity.getGivenAmount()
+                entity.getGivenAmount(),
+                entity.getBonusType().toString()
         );
     }
 }
