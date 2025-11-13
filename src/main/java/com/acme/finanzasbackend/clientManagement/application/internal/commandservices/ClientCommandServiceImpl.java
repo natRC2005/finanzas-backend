@@ -43,6 +43,12 @@ public class ClientCommandServiceImpl implements ClientCommandService {
     public Optional<Client> handle(UpdateClientCommand command) {
         Client client = clientRepository.findById(command.id())
                 .orElseThrow(() -> new RuntimeException("Client not found"));
+        if (clientRepository.existsByFirstnameAndLastname(command.firstname(), command.lastname()) &&
+            !clientRepository.existsByFirstnameAndLastnameAndId(command.firstname(), command.lastname(), client.getId()))
+            throw new IllegalArgumentException("A client with this firstname and lastname already exists");
+        if (clientRepository.existsByDni(command.dni()) &&
+            !clientRepository.existsByDniAndId(command.dni(), client.getId()))
+            throw new IllegalArgumentException("A client with this dni already exists");
         var currency = currencyRepository.getById(command.currencyId());
         client.modifyClient(command, currency);
         try {

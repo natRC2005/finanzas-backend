@@ -13,4 +13,5 @@ public interface HousingRepository extends JpaRepository<Housing, Long> {
     Optional<Housing> findById(Long id);
     boolean existsByTitle(String title);
     List<Housing> findByRealStateCompanyId(RealStateCompanyId realStateCompanyId);
+    boolean existsByTitleAndId(String title, Long id);
 }

@@ -190,21 +190,17 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
 
     /**
      * Missing tasks
-     * - evaluate credit application - DONE TO CHECK
-     * - create credit application
-     * - get credit application by id
      * - create payment plan - DONE TO CHECK
      *  -> calculate van & tir - DONE TO CHECK
      *
      *  MISSING
-     *  - check exchange currency functionality
      *  - update credit evaluation failed
      *  - get all credit evaluations
-     *  - check credit validation approval
      *
      *  // UPDATE -> Add variables -> completely refactor values calculus
      *      -> remember to consider all kinds of effective rates
      *      -> adapt the whole Excel to code (cries)
+     *      -> FIRST -> Check InterestRate use
      */
 
 }
