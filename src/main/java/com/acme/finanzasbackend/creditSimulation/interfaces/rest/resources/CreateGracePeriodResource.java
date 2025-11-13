@@ -8,8 +8,8 @@ public record CreateGracePeriodResource(
         if (type == null) {
             throw new IllegalArgumentException("type must not be null");
         }
-        if (months == null || months < 1) {
-            throw new IllegalArgumentException("months must not be less than 1");
+        if (months == null || months < 0 || months > 6) {
+            throw new IllegalArgumentException("months must not be less than 0 or more than 6");
         }
     }
 }
