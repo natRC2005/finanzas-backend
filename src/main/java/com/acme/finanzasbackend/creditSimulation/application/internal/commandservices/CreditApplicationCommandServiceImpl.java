@@ -11,6 +11,7 @@ import com.acme.finanzasbackend.creditSimulation.infrastructure.persistence.jpa.
 import com.acme.finanzasbackend.creditSimulation.infrastructure.persistence.jpa.repositories.CreditApplicationRepository;
 import com.acme.finanzasbackend.creditSimulation.infrastructure.persistence.jpa.repositories.GracePeriodRepository;
 import com.acme.finanzasbackend.creditSimulation.infrastructure.persistence.jpa.repositories.InterestRateRepository;
+import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.HousingState;
 import com.acme.finanzasbackend.housingFinance.infrastructure.persistence.jpa.repositories.FinanceEntityRepository;
 import com.acme.finanzasbackend.housingFinance.infrastructure.persistence.jpa.repositories.HousingRepository;
 import com.acme.finanzasbackend.shared.infrastructure.persistence.jpa.repositories.CurrencyRepository;
@@ -81,7 +82,12 @@ public class CreditApplicationCommandServiceImpl implements CreditApplicationCom
         var bonus = new Bonus(command.isBonusRequired(), housing.getHousingCategory(),
                 housing.getSalePrice(), currency, client.getIsIntegrator());
 
-        var gracePeriod = new GracePeriod(command.gracePeriodType(), command.gracePeriodMonths());
+        var gracePeriodValidTime = command.gracePeriodMonths();
+        if (housing.getHousingState() == HousingState.NUEVO ||
+                housing.getHousingState() == HousingState.SEGUNDA) {
+            gracePeriodValidTime = 0;
+        }
+        var gracePeriod = new GracePeriod(command.gracePeriodType(), gracePeriodValidTime);
 
         boolean hasAnotherHousingFinancing = creditApplicationRepository.existsByClient(client);
 

@@ -63,8 +63,8 @@ public record CreateCreditApplicationCommand(
         if (gracePeriodType == null) {
             throw new IllegalArgumentException("gracePeriodType must not be null");
         }
-        if (gracePeriodMonths == null || gracePeriodMonths < 1) {
-            throw new IllegalArgumentException("gracePeriodMonths must not be less than 1");
+        if (gracePeriodMonths == null || gracePeriodMonths < 1 || gracePeriodMonths > 6) {
+            throw new IllegalArgumentException("gracePeriodMonths must not be less than 1 or greater than 6");
         }
         if (notaryCost == null || notaryCost < 0) {
             throw new IllegalArgumentException("notaryCost cannot be negative");
