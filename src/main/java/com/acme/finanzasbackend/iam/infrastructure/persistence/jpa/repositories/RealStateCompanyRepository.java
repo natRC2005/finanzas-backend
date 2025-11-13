@@ -14,4 +14,8 @@ public interface RealStateCompanyRepository extends JpaRepository<RealStateCompa
     boolean existsByCompanyEmail(String companyEmail);
     boolean existsByUsername(String username);
     boolean existsByRuc(String ruc);
+    boolean existsByCompanyNameAndId(String companyName, Long id);
+    boolean existsByCompanyEmailAndId(String companyEmail, Long id);
+    boolean existsByUsernameAndId(String username, Long id);
+    boolean existsByRucAndId(String ruc, Long id);
 }

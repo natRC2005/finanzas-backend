@@ -53,6 +53,18 @@ public class RealStateCompanyCommandServiceImpl implements RealStateCompanyComma
     public Optional<RealStateCompany> handle(UpdateRealStateCompanyCommand command) {
         RealStateCompany realStateCompany = realStateCompanyRepository.findById(command.id())
                 .orElseThrow(() -> new IllegalArgumentException("Company not found"));
+        if (realStateCompanyRepository.existsByCompanyName(command.companyName()) &&
+                !realStateCompanyRepository.existsByCompanyNameAndId(command.companyName(), realStateCompany.getId()))
+            throw new IllegalArgumentException("Company name already exists");
+        if (realStateCompanyRepository.existsByCompanyEmail(command.companyEmail()) &&
+                !realStateCompanyRepository.existsByCompanyEmailAndId(command.companyEmail(), realStateCompany.getId()))
+            throw new IllegalArgumentException("Company email already exists");
+        if (realStateCompanyRepository.existsByRuc(command.ruc()) &&
+                !realStateCompanyRepository.existsByRucAndId(command.ruc(), realStateCompany.getId()))
+            throw new IllegalArgumentException("RUC already in use");
+        if (realStateCompanyRepository.existsByUsername(command.username()) &&
+                !realStateCompanyRepository.existsByUsernameAndId(command.username(), realStateCompany.getId()))
+            throw new IllegalArgumentException("Username already exists");
         realStateCompany.modifyRealStateCompany(command, hashingService.encode(command.password()));
         try {
             realStateCompanyRepository.save(realStateCompany);
