@@ -3,7 +3,8 @@ package com.acme.finanzasbackend.creditSimulation.interfaces.rest.resources;
 public record CreateInterestRateResource(
         String type,
         String period,
-        Double percentage
+        Double percentage,
+        String nominalCapitalization
 ) {
     public CreateInterestRateResource {
         if (type == null) {

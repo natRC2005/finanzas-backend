@@ -12,6 +12,7 @@ public record CreateCreditApplicationCommand(
         String interestRateType,
         String interestRatePeriod,
         Double interestRatePercentage,
+        String interestRateNominalCapitalization,
         Boolean isBonusRequired,
         String gracePeriodType,
         Integer gracePeriodMonths,

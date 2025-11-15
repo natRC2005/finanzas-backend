@@ -8,7 +8,8 @@ public class CreateInterestRateCommandFromResourceAssembler {
         return new CreateInterestRateCommand(
                 resource.type(),
                 resource.period(),
-                resource.percentage()
+                resource.percentage(),
+                resource.nominalCapitalization()
         );
     }
 }

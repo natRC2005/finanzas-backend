@@ -10,7 +10,8 @@ public class InterestRateResourceFromEntityAssembler {
                 entity.getType().toString(),
                 entity.getPeriod().toString(),
                 entity.getPercentage(),
-                entity.getTea()
+                entity.getNominalCapitalization().toString(),
+                entity.getTem()
         );
     }
 }

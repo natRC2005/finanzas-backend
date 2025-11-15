@@ -3,7 +3,8 @@ package com.acme.finanzasbackend.creditSimulation.domain.model.commands;
 public record CreateInterestRateCommand(
         String type,
         String period,
-        Double percentage
+        Double percentage,
+        String nominalCapitalization
 ) {
     public CreateInterestRateCommand {
         if (type == null) {

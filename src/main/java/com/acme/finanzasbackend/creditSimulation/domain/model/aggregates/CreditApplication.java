@@ -190,8 +190,8 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
 
     /**
      * Missing tasks
-     * - create payment plan - DONE TO CHECK
-     *  -> calculate van & tir - DONE TO CHECK
+     * - create payment plan
+     *  -> calculate van & tir
      *
      *  MISSING
      *  - update credit evaluation failed

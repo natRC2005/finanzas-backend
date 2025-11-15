@@ -5,6 +5,7 @@ public record InterestRateResource(
         String type,
         String period,
         Double percentage,
-        Double tea
+        String nominalCapitalization,
+        Double tem
 ) {
 }
