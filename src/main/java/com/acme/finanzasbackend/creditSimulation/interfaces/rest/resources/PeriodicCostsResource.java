@@ -5,6 +5,7 @@ public record PeriodicCostsResource(
         Double shippingCosts, // portes
         Double administrationExpenses,
         Double lifeInsurance, // desgravamen
-        Double riskInsurance
+        Double riskInsurance,
+        Double monthlyStatementDelivery
 ) {
 }

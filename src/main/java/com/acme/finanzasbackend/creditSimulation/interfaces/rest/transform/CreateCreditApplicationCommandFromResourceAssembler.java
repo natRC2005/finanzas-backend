@@ -32,6 +32,7 @@ public class CreateCreditApplicationCommandFromResourceAssembler {
                 resource.administrationExpenses(),
                 resource.lifeInsurance(),
                 resource.riskInsurance(),
+                resource.monthlyStatementDelivery(),
                 resource.yearsPaymentTerm(),
                 resource.downPaymentPercentage(),
                 resource.hasCreditHistory()

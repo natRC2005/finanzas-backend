@@ -28,6 +28,7 @@ public record CreateCreditApplicationResource(
         Double administrationExpenses,
         Double lifeInsurance, // desgravamen
         Double riskInsurance,
+        Double monthlyStatementDelivery,
         Double yearsPaymentTerm,
         Double downPaymentPercentage,
         Boolean hasCreditHistory
@@ -104,6 +105,9 @@ public record CreateCreditApplicationResource(
         }
         if (riskInsurance == null || riskInsurance < 0) {
             throw new IllegalArgumentException("riskInsurance cannot be negative");
+        }
+        if (monthlyStatementDelivery == null || monthlyStatementDelivery < 0) {
+            throw new IllegalArgumentException("monthlyStatementDelivery cannot be negative");
         }
         if (yearsPaymentTerm == null || yearsPaymentTerm < 1) {
             throw new IllegalArgumentException("yearsPaymentTerm must not be less than 1");

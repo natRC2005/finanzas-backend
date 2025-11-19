@@ -10,7 +10,8 @@ public class PeriodicCostsResourceFromEntityAssembler {
                 entity.shippingCosts() != null ? entity.shippingCosts() : null,
                 entity.administrationExpenses() != null ? entity.administrationExpenses() : null,
                 entity.lifeInsurance() != null ? entity.lifeInsurance() : null,
-                entity.riskInsurance() != null ? entity.riskInsurance() : null
+                entity.riskInsurance() != null ? entity.riskInsurance() : null,
+                entity.monthlyStatementDelivery() != null ? entity.monthlyStatementDelivery() : null
         );
     }
 }

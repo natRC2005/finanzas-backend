@@ -1,5 +1,6 @@
 package com.acme.finanzasbackend.housingFinance.domain.model.aggregates;
 
+import com.acme.finanzasbackend.creditSimulation.domain.model.valueobjects.GracePeriodType;
 import com.acme.finanzasbackend.housingFinance.domain.model.commands.EvaluateFinanceEntityCommand;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.FinanceEntityType;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.FinanceEntityValidationResult;
@@ -228,5 +229,46 @@ public class FinanceEntity extends AuditableAbstractAggregateRoot<FinanceEntity>
         }
         if (Objects.equals(this.name, "CMAC Huancayo")) return 0.00;
         return fee;
+    }
+
+    public Double getLifeInsurance(Double amount, Double housingPriceAmount) { // desgravamen
+        if (Objects.equals(this.name, "BCP Banco de Crédito del Perú")) return 0.115;
+        if (Objects.equals(this.name, "BBVA Perú") ||
+                Objects.equals(this.name, "Interbank")) return 0.028;
+        if (Objects.equals(this.name, "BanBif")) return 0.056;
+        if (Objects.equals(this.name, "Bancom")) return 0.075;
+        if (Objects.equals(this.name, "Banco GNB")) return 0.027;
+        if (Objects.equals(this.name, "CMAC Huancayo")) {
+            if (housingPriceAmount <= 10000) return 0.15;
+            if (housingPriceAmount <= 60000) return 0.10;
+            return 0.083;
+        }
+        if (Objects.equals(this.name, "CMAC Cusco")) return 0.07;
+        if (Objects.equals(this.name, "CMAC Trujillo")) return 0.108;
+        if (Objects.equals(this.name, "CMAC Maynas") ||
+                Objects.equals(this.name, "CMAC Arequipa")) return 0.10;
+        if (Objects.equals(this.name, "CMAC Piura")) return 0.095;
+        if (Objects.equals(this.name, "Financiera Efectiva")) return 0.035;
+        if (Objects.equals(this.name, "EC Vivela")) return 0.045;
+        return amount;
+    }
+
+    public Double getRiskInsurance(Double amount, GracePeriodType gracePeriodType) {
+        if (Objects.equals(this.name, "BCP Banco de Crédito del Perú")) return 0.021;
+        if (Objects.equals(this.name, "BBVA Perú")) {
+            if (gracePeriodType == GracePeriodType.NULL) return 0.02026;
+            return 0.02784;
+        }
+        if (Objects.equals(this.name, "Interbank")) return 0.02829;
+        if (Objects.equals(this.name, "BanBif")) return 0.031;
+        if (Objects.equals(this.name, "Bancom")) return 0.025298;
+        if (Objects.equals(this.name, "Banco GNB")) return 0.02594;
+        if (Objects.equals(this.name, "CMAC Huancayo")) return 0.02099;
+        if (Objects.equals(this.name, "CMAC Cusco")) return 0.035;
+        if (Objects.equals(this.name, "CMAC Trujillo")) return 0.0408;
+        if (Objects.equals(this.name, "CMAC Piura")) return 0.0236;
+        if (Objects.equals(this.name, "Financiera Efectiva")) return 0.0194915;
+        if (Objects.equals(this.name, "EC Vivela")) return 0.02643;
+        return amount;
     }
 }
