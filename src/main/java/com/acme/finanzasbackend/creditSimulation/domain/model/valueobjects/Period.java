@@ -8,7 +8,8 @@ public enum Period {
     TRIMESTRAL,
     CUATRIMESTRAL,
     SEMESTRAL,
-    ANUAL
+    ANUAL,
+    NULA
 }
 
 // UPDATE -> change naming to 'Period' so that it applies for TE and TN

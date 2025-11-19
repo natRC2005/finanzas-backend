@@ -100,7 +100,10 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
         this.bonus = bonus;
         this.gracePeriod = gracePeriod;
         this.initialCosts = new InitialCosts(command.notaryCost(), command.registryCost(),
-                command.appraisal(), command.studyCommission(), command.activationCommission());
+                financeEntity.getAppraisal(command.appraisal(), housing.getHousingState(), housing.getProvince(), currency),
+                financeEntity.getStudyCommission(command.studyCommission(), currency),
+                command.activationCommission(), command.professionalFeesCost(),
+                financeEntity.getDocumentationFee(command.documentationFee(), currency, housing.getSalePrice()));
         this.periodicCosts = new PeriodicCosts(command.periodicCommission(), command.shippingCosts(),
                 command.administrationExpenses(), command.lifeInsurance(), command.riskInsurance());
         this.downPaymentPercentage = command.downPaymentPercentage();
@@ -179,7 +182,56 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
      }
 
     public void generatePayments() {
+        /**
+         * public Payment(Integer orderNumber, Double tem,
+         *                    GracePeriodType gracePeriodType, Double initialBalance,
+         *                    Double interest, Double fee,
+         *                    Double amortization, PeriodicCosts periodicCosts,
+         *                    Double finalBalance) {
+         *         this.orderNumber = orderNumber;          -> i
+         *         this.tem = tem;                          -> this.interestRate.tem
+         *         this.gracePeriodType = gracePeriodType;  -> this.gracePeriod.type
+         *         this.initialBalance = initialBalance;    -> initialBalance
+         *         this.interest = interest;                -> interest
+         *         this.fee = fee;                          ->
+         *         this.amortization = amortization;
+         *         this.periodicCosts = periodicCosts;
+         *              PeriodicCosts(
+             *              Double periodicCommission,
+             *              Double shippingCosts, // portes
+             *              Double administrationExpenses,
+             *              Double lifeInsurance, // desgravamen
+             *              Double riskInsurance
+             *      )
+         *         this.finalBalance = finalBalance;
+         *         this.cashFlow = this.initialBalance - this.finalBalance;
+         *     }
+         */
+        double finalBalance = this.financing;
 
+        for (int i = 1; i <= this.monthsPaymentTerm; i++) {
+            double initialBalance = finalBalance;
+            double interest = initialBalance * this.interestRate.getTem();
+            
+            // Periodo de Gracia
+            double fee;
+            double amortization;
+            if (i <= this.gracePeriod.getMonths()) {
+                if (this.gracePeriod.getType() == GracePeriodType.TOTAL) {
+                    fee = 0;
+                    amortization = 0;
+                } else if (this.gracePeriod.getType() == GracePeriodType.PARCIAL) {
+                    fee = interest;
+                    amortization = 0;
+                }
+            } else {
+
+            }
+            
+            // Create the Payment
+
+            // falta valor de finalBalance
+        }
     }
 
     public void removePayment(Payment payment) {
@@ -190,21 +242,17 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
 
     /**
      * Missing tasks
-     * - evaluate credit application - DONE TO CHECK
-     * - create credit application
-     * - get credit application by id
-     * - create payment plan - DONE TO CHECK
-     *  -> calculate van & tir - DONE TO CHECK
+     * - create payment plan
+     *  -> calculate van & tir
      *
      *  MISSING
-     *  - check exchange currency functionality
      *  - update credit evaluation failed
      *  - get all credit evaluations
-     *  - check credit validation approval
      *
      *  // UPDATE -> Add variables -> completely refactor values calculus
      *      -> remember to consider all kinds of effective rates
      *      -> adapt the whole Excel to code (cries)
+     *      -> FIRST -> Check InterestRate use
      */
 
 }

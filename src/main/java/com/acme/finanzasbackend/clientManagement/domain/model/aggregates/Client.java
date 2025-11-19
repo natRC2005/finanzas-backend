@@ -13,6 +13,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Objects;
+
 @Getter
 @Setter
 @Entity
@@ -60,7 +62,7 @@ public class Client extends AuditableAbstractAggregateRoot<Client> {
         if (this.age >= 65 || salary <= 4746.00) this.isIntegrator  = true;
     }
 
-    public void modifyClient(UpdateClientCommand command, Currency currency) {
+    public void modifyClient(UpdateClientCommand command, Currency currency, Currency previousCurrency, Double previousMonthlyIncome) {
         this.firstname = command.firstname();
         this.lastname = command.lastname();
         this.dni = command.dni();
@@ -69,6 +71,8 @@ public class Client extends AuditableAbstractAggregateRoot<Client> {
         this.isWorking = command.isWorking();
         this.dependentsNumber = command.dependentsNumber();
         this.monthlyIncome = command.monthlyIncome();
+        if (currency != previousCurrency && Objects.equals(command.monthlyIncome(), previousMonthlyIncome))
+            this.monthlyIncome = previousCurrency.exchangeCurrency(monthlyIncome);
         this.isDependent = command.isDependent();
         this.workingYears = command.workingYears();
         this.isIntegrator = command.isIntegrator();

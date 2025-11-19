@@ -41,6 +41,9 @@ public class HousingCommandServiceImpl implements HousingCommandService {
     public Optional<Housing> handle(UpdateHousingCommand command) {
         Housing housing = housingRepository.findById(command.id())
                 .orElseThrow(() -> new RuntimeException("Housing not found"));
+        if (housingRepository.existsByTitle(command.title()) &&
+            !housingRepository.existsByTitleAndId(command.title(), housing.getId()))
+            throw new IllegalArgumentException("Housing with this title already exists");
         var currency = currencyRepository.getById(command.currencyId());
         housing.modifyHousing(command, currency);
         try {

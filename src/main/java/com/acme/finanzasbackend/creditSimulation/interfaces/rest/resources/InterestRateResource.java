@@ -4,6 +4,8 @@ public record InterestRateResource(
         Long id,
         String type,
         String period,
-        Double percentage
+        Double percentage,
+        String nominalCapitalization,
+        Double tem
 ) {
 }

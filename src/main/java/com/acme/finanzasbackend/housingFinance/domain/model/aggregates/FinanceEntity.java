@@ -4,7 +4,9 @@ import com.acme.finanzasbackend.housingFinance.domain.model.commands.EvaluateFin
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.FinanceEntityType;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.FinanceEntityValidationResult;
 import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.HousingState;
+import com.acme.finanzasbackend.housingFinance.domain.model.valueobjects.Province;
 import com.acme.finanzasbackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
+import com.acme.finanzasbackend.shared.domain.model.entities.Currency;
 import jakarta.persistence.Entity;
 import lombok.Getter;
 import lombok.Setter;
@@ -159,5 +161,72 @@ public class FinanceEntity extends AuditableAbstractAggregateRoot<FinanceEntity>
         if (!this.allowsAnotherHousingFinancing && command.hasAnotherHousingFinancing())
             return new FinanceEntityValidationResult(false, "No se permite tener otro financiamiento de vivienda vigente.");
         return new FinanceEntityValidationResult(true, "Cumple con todos los requisitos.");
+    }
+
+    public Double getAppraisal(Double appraisal, HousingState housingState, Province province, Currency currency) {
+        if (Objects.equals(this.name, "BBVA Perú")) {
+            if (Objects.equals(currency.getCode(), "PEN")) return 265.00;
+            else return currency.exchangeCurrency(265.00);
+        }
+        if (Objects.equals(this.name, "Interbank")) {
+            if (province == Province.LIMA) {
+                if (housingState == HousingState.NUEVO || housingState == HousingState.SEGUNDA) {
+                    if (Objects.equals(currency.getCode(), "PEN")) return 145.00;
+                    else return currency.exchangeCurrency(145.00);
+                }
+                if (Objects.equals(currency.getCode(), "PEN")) return 125.00;
+                else return currency.exchangeCurrency(125.00);
+            }
+            return appraisal;
+        }
+        if (Objects.equals(this.name, "Bancom")) {
+            Double amount = appraisal;
+            if (Objects.equals(currency.getCode(), "PEN")) {
+                amount = currency.exchangeCurrency(appraisal);
+                if (amount > 60) amount = 60.0;
+                return amount * 1.18;
+            }
+            if (amount > currency.exchangeCurrency(60.0)) amount = currency.exchangeCurrency(60.0);
+            return amount * 1.18;
+        }
+        return appraisal;
+    }
+
+    public Double getStudyCommission(Double commission, Currency currency) {
+        if (Objects.equals(this.name, "BBVA Perú")) {
+            if (Objects.equals(currency.getCode(), "USD")) return 65.00;
+            else return currency.exchangeCurrency(65.00);
+        }
+        if (Objects.equals(this.name, "Interbank")) {
+            if (Objects.equals(currency.getCode(), "PEN")) return 150.00;
+            else return currency.exchangeCurrency(150.00);
+        }
+        if (Objects.equals(this.name, "Scotiabank")) {
+            if (Objects.equals(currency.getCode(), "PEN")) return 200.00;
+            else return 50.00;
+        }
+        if (Objects.equals(this.name, "Banco GNB")) {
+            if (Objects.equals(currency.getCode(), "PEN")) return 300.00;
+            else return currency.exchangeCurrency(300.00);
+        }
+        if (Objects.equals(this.name, "CMAC Trujillo")) {
+            if (Objects.equals(currency.getCode(), "PEN")) return 50.00;
+            else return currency.exchangeCurrency(50.00);
+        }
+        if (Objects.equals(this.name, "CMAC Maynas")) {
+            if (Objects.equals(currency.getCode(), "PEN")) return 40.00;
+            else return currency.exchangeCurrency(40.00);
+        }
+        return commission;
+    }
+
+    public Double getDocumentationFee(Double fee, Currency currency, Double housingPriceAmount) {
+        if (Objects.equals(this.name, "BBVA Perú")) return housingPriceAmount * 0.00028;
+        if (Objects.equals(this.name, "Interbank")) {
+            if (Objects.equals(currency.getCode(), "PEN")) return 33.00;
+            else return currency.exchangeCurrency(33.00);
+        }
+        if (Objects.equals(this.name, "CMAC Huancayo")) return 0.00;
+        return fee;
     }
 }

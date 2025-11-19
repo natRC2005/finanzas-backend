@@ -14,4 +14,6 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     Boolean existsByFirstnameAndLastname(String firstName, String lastName);
     Boolean existsByDni(String dni);
     List<Client> findAllByRealStateCompanyId(RealStateCompanyId realStateCompanyId);
+    Boolean existsByFirstnameAndLastnameAndId(String firstname, String lastname, Long id);
+    Boolean existsByDniAndId(String dni, Long id);
 }

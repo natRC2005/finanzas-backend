@@ -10,7 +10,9 @@ public class InitialCostsResourceFromEntityAssembler {
                 entity.registryCost() != null ? entity.registryCost() : null,
                 entity.appraisal() != null ? entity.appraisal() : null,
                 entity.studyCommission() != null ? entity.studyCommission() : null,
-                entity.activationCommission() != null ? entity.activationCommission() : null
+                entity.activationCommission() != null ? entity.activationCommission() : null,
+                entity.professionalFeesCost() != null ? entity.professionalFeesCost() : null,
+                entity.documentationFee() != null ? entity.documentationFee() : null
         );
     }
 }
