@@ -17,6 +17,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Objects;
+
 @Getter
 @Setter
 @Entity
@@ -61,7 +63,7 @@ public class Housing extends AuditableAbstractAggregateRoot<Housing> {
         this.currency = currency;
     }
 
-    public void modifyHousing(UpdateHousingCommand command, Currency currency) {
+    public void modifyHousing(UpdateHousingCommand command, Currency currency, Currency previousCurrency, Double previousSalePrice) {
         this.title = command.title();
         this.description = command.description();
         this.province = Province.valueOf(command.province());
@@ -71,6 +73,8 @@ public class Housing extends AuditableAbstractAggregateRoot<Housing> {
         this.area = command.area();
         this.roomQuantity = command.roomQuantity();
         this.salePrice = command.salePrice();
+        if (currency != previousCurrency && Objects.equals(command.salePrice(), previousSalePrice))
+            this.salePrice = previousCurrency.exchangeCurrency(previousSalePrice);
         this.housingState = HousingState.valueOf(command.housingState());
         this.housingCategory = HousingCategory.valueOf(command.housingCategory());
         this.currency = currency;

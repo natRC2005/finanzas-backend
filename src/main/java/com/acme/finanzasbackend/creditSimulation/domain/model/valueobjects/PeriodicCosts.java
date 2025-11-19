@@ -8,7 +8,8 @@ public record PeriodicCosts(
         Double shippingCosts, // portes
         Double administrationExpenses,
         Double lifeInsurance, // desgravamen
-        Double riskInsurance
+        Double riskInsurance,
+        Double monthlyStatementDelivery // envio de estado de cuenta
 ) {
     public PeriodicCosts {}
 }
