@@ -7,6 +7,7 @@ import com.acme.finanzasbackend.housingFinance.domain.model.commands.ExchangeSal
 import com.acme.finanzasbackend.housingFinance.domain.model.commands.UpdateHousingCommand;
 import com.acme.finanzasbackend.housingFinance.domain.services.HousingCommandService;
 import com.acme.finanzasbackend.housingFinance.infrastructure.persistence.jpa.repositories.HousingRepository;
+import com.acme.finanzasbackend.shared.domain.model.entities.Currency;
 import com.acme.finanzasbackend.shared.infrastructure.persistence.jpa.repositories.CurrencyRepository;
 import org.springframework.stereotype.Service;
 
@@ -41,11 +42,13 @@ public class HousingCommandServiceImpl implements HousingCommandService {
     public Optional<Housing> handle(UpdateHousingCommand command) {
         Housing housing = housingRepository.findById(command.id())
                 .orElseThrow(() -> new RuntimeException("Housing not found"));
+        Currency previousCurrency = housing.getCurrency();
+        Double previousSalePrice = housing.getSalePrice();
         if (housingRepository.existsByTitle(command.title()) &&
             !housingRepository.existsByTitleAndId(command.title(), housing.getId()))
             throw new IllegalArgumentException("Housing with this title already exists");
         var currency = currencyRepository.getById(command.currencyId());
-        housing.modifyHousing(command, currency);
+        housing.modifyHousing(command, currency, previousCurrency, previousSalePrice);
         try {
             housingRepository.save(housing);
         } catch (Exception ex) {

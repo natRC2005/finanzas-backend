@@ -59,7 +59,7 @@ public class Client extends AuditableAbstractAggregateRoot<Client> {
         this.currency = currency;
         Double salary = this.monthlyIncome;
         if (this.currency.getId() == 2) salary = this.currency.exchangeCurrency(monthlyIncome);
-        if (this.age >= 65 || salary <= 4746.00) this.isIntegrator  = true;
+        if (this.age >= 65 || salary <= 4746.00) this.isIntegrator = true;
     }
 
     public void modifyClient(UpdateClientCommand command, Currency currency, Currency previousCurrency, Double previousMonthlyIncome) {
@@ -79,7 +79,7 @@ public class Client extends AuditableAbstractAggregateRoot<Client> {
         this.currency = currency;
         Double salary = this.monthlyIncome;
         if (this.currency.getId() == 2) salary = this.currency.exchangeCurrency(monthlyIncome);
-        if (this.age >= 65 || salary <= 4746.00) this.isIntegrator  = true;
+        if (this.age >= 65 || salary <= 4746.00) this.isIntegrator = true;
     }
 
     public void exchangeSalaryCurrency(Currency currency) {
