@@ -5,6 +5,8 @@ public record InitialCostsResource(
         Double registryCost,
         Double appraisal, // tasacion
         Double studyCommission,
-        Double activationCommission
+        Double activationCommission,
+        Double professionalFeesCost, // gatos por honorarios profesionales
+        Double documentationFee
 ) {
 }

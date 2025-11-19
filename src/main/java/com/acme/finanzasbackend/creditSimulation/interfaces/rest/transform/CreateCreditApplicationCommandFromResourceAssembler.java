@@ -25,6 +25,8 @@ public class CreateCreditApplicationCommandFromResourceAssembler {
                 resource.appraisal(),
                 resource.studyCommission(),
                 resource.activationCommission(),
+                resource.professionalFeesCost(),
+                resource.documentationFee(),
                 resource.periodicCommission(),
                 resource.shippingCosts(),
                 resource.administrationExpenses(),

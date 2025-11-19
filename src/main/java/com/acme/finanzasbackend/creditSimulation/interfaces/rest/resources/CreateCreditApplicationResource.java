@@ -21,6 +21,8 @@ public record CreateCreditApplicationResource(
         Double appraisal, // tasacion
         Double studyCommission,
         Double activationCommission,
+        Double professionalFeesCost, // gatos por honorarios profesionales
+        Double documentationFee,
         Double periodicCommission,
         Double shippingCosts, // portes
         Double administrationExpenses,
@@ -81,6 +83,12 @@ public record CreateCreditApplicationResource(
         }
         if (activationCommission == null || activationCommission < 0) {
             throw new IllegalArgumentException("activationCommission cannot be negative");
+        }
+        if (professionalFeesCost == null || professionalFeesCost < 0) {
+            throw new IllegalArgumentException("professionalFeesCost cannot be negative");
+        }
+        if (documentationFee == null || documentationFee < 0) {
+            throw new IllegalArgumentException("documentationFee cannot be negative");
         }
         if (periodicCommission == null || periodicCommission < 0) {
             throw new IllegalArgumentException("periodicCommission cannot be negative");
