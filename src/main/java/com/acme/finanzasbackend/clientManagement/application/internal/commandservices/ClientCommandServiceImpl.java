@@ -7,6 +7,7 @@ import com.acme.finanzasbackend.clientManagement.domain.model.commands.ExchangeS
 import com.acme.finanzasbackend.clientManagement.domain.model.commands.UpdateClientCommand;
 import com.acme.finanzasbackend.clientManagement.domain.services.ClientCommandService;
 import com.acme.finanzasbackend.clientManagement.infrastructure.persistence.jpa.repositories.ClientRepository;
+import com.acme.finanzasbackend.shared.domain.model.entities.Currency;
 import com.acme.finanzasbackend.shared.infrastructure.persistence.jpa.repositories.CurrencyRepository;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +44,8 @@ public class ClientCommandServiceImpl implements ClientCommandService {
     public Optional<Client> handle(UpdateClientCommand command) {
         Client client = clientRepository.findById(command.id())
                 .orElseThrow(() -> new RuntimeException("Client not found"));
+        Currency previousCurrency = client.getCurrency();
+        Double previousMonthlyIncome = client.getMonthlyIncome();
         if (clientRepository.existsByFirstnameAndLastname(command.firstname(), command.lastname()) &&
             !clientRepository.existsByFirstnameAndLastnameAndId(command.firstname(), command.lastname(), client.getId()))
             throw new IllegalArgumentException("A client with this firstname and lastname already exists");
@@ -50,7 +53,7 @@ public class ClientCommandServiceImpl implements ClientCommandService {
             !clientRepository.existsByDniAndId(command.dni(), client.getId()))
             throw new IllegalArgumentException("A client with this dni already exists");
         var currency = currencyRepository.getById(command.currencyId());
-        client.modifyClient(command, currency);
+        client.modifyClient(command, currency, previousCurrency, previousMonthlyIncome);
         try {
             clientRepository.save(client);
         } catch (Exception ex) {
