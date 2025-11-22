@@ -10,11 +10,14 @@ import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Entity
 public class Payment extends AuditableModel {
     private Integer orderNumber;
+    private LocalDate paymentDate;
     private Double tem; // Tasa Efectiva Mensual
     private GracePeriodType gracePeriodType;
     private Double initialBalance; // Saldo Inicial
@@ -31,12 +34,13 @@ public class Payment extends AuditableModel {
 
     public Payment() {}
 
-    public Payment(Integer orderNumber, Double tem,
+    public Payment(Integer orderNumber, LocalDate paymentDate, Double tem,
                    GracePeriodType gracePeriodType, Double initialBalance,
                    Double interest, Double fee,
                    Double amortization, PeriodicCosts periodicCosts,
-                   Double finalBalance) {
+                   Double finalBalance, Double cashFlow) {
         this.orderNumber = orderNumber;
+        this.paymentDate = paymentDate;
         this.tem = tem;
         this.gracePeriodType = gracePeriodType;
         this.initialBalance = initialBalance;
@@ -45,6 +49,6 @@ public class Payment extends AuditableModel {
         this.amortization = amortization;
         this.periodicCosts = periodicCosts;
         this.finalBalance = finalBalance;
-        this.cashFlow = this.initialBalance - this.finalBalance;
+        this.cashFlow = cashFlow;
     }
 }

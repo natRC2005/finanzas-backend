@@ -20,6 +20,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -178,34 +179,41 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
         return 0.0;
     }
 
-     private Double calculateFinancing() {
+    private Double calculateFinancing() {
          return 0.0;
-     }
+    }
+
+    private double pago(double tasa, double nPeriod, double currentValue) {
+        double pow = Math.pow(1 + tasa, nPeriod);
+        return (tasa * (currentValue * pow))/(1 * (pow - 1));   // consder negative
+    }
 
     public void generatePayments() {
         /**
-         * public Payment(Integer orderNumber, Double tem,
+         * public Payment(Integer orderNumber, Date paymentDate, Double tem,
          *                    GracePeriodType gracePeriodType, Double initialBalance,
          *                    Double interest, Double fee,
          *                    Double amortization, PeriodicCosts periodicCosts,
-         *                    Double finalBalance) {
+         *                    Double finalBalance, Double cashFlow) {
          *         this.orderNumber = orderNumber;          -> i
+         *         this.paymentDate = paymentDate;          -> paymentDate
          *         this.tem = tem;                          -> this.interestRate.tem
          *         this.gracePeriodType = gracePeriodType;  -> this.gracePeriod.type
          *         this.initialBalance = initialBalance;    -> initialBalance
          *         this.interest = interest;                -> interest
-         *         this.fee = fee;                          ->
-         *         this.amortization = amortization;
+         *         this.fee = fee;                          -> fee
+         *         this.amortization = amortization;        -> amortization
          *         this.periodicCosts = periodicCosts;
          *              PeriodicCosts(
-             *              Double periodicCommission,
-             *              Double shippingCosts, // portes
-             *              Double administrationExpenses,
-             *              Double lifeInsurance, // desgravamen
-             *              Double riskInsurance
+             *              Double periodicCommission,              -> this.periodicCosts.periodicCommission
+             *              Double shippingCosts, // portes         -> this.periodicCosts.shippingCosts
+             *              Double administrationExpenses,          -> this.periodicCosts.administrationExpenses
+             *              Double lifeInsurance, // desgravamen    -> lifeInsurance
+             *              Double riskInsurance,                   -> this.periodicCosts.riskInsurance
+         *                  Double monthlyStatementDelivery         -> this.periodicCosts.monthlyStatementDelivery
              *      )
-         *         this.finalBalance = finalBalance;
-         *         this.cashFlow = this.initialBalance - this.finalBalance;
+         *         this.finalBalance = finalBalance;        -> finalBalance
+         *         this.cashFlow = cashFlow;
          *     }
          */
         double finalBalance = this.financing;
@@ -213,20 +221,27 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
         for (int i = 1; i <= this.monthsPaymentTerm; i++) {
             double initialBalance = finalBalance;
             double interest = initialBalance * this.interestRate.getTem();
+            LocalDate paymentDate = this.startDate.plusMonths(i-1);
             
             // Periodo de Gracia
             double fee;
             double amortization;
+            double lifeInsurance = initialBalance * this.periodicCosts.lifeInsurance()/100;
             if (i <= this.gracePeriod.getMonths()) {
                 if (this.gracePeriod.getType() == GracePeriodType.TOTAL) {
                     fee = 0;
                     amortization = 0;
+                    finalBalance = initialBalance + interest;
                 } else if (this.gracePeriod.getType() == GracePeriodType.PARCIAL) {
                     fee = interest;
                     amortization = 0;
+                    finalBalance = initialBalance - amortization;
                 }
             } else {
-
+                fee = pago(this.getInterestRate().getTem() + this.periodicCosts.lifeInsurance()/100,
+                        this.monthsPaymentTerm - i + 1, initialBalance);
+                amortization = fee - interest - lifeInsurance;
+                finalBalance = initialBalance - amortization;
             }
             
             // Create the Payment
@@ -254,6 +269,12 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
      *      -> remember to consider all kinds of effective rates
      *      -> adapt the whole Excel to code (cries)
      *      -> FIRST -> Check InterestRate use
+     *
+     *  FOR SATURDAY
+     *  -> Calculate cashFlow
+     *      - Add sum function for PeriodicCosts
+     *      - Add calculateFinancing()
+     *      - Create PeriodicCosts object for each payment
      */
 
 }
