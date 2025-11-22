@@ -20,7 +20,6 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -214,7 +213,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
          *                  Double monthlyStatementDelivery         -> this.periodicCosts.monthlyStatementDelivery
              *      )
          *         this.finalBalance = finalBalance;        -> finalBalance
-         *         this.cashFlow = cashFlow;
+         *         this.cashFlow = cashFlow;                -> cashFlow
          *     }
          */
         double finalBalance = this.financing;
@@ -226,8 +225,9 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             LocalDate paymentDate = this.startDate.plusMonths(i-1);
             
             // Periodo de Gracia
-            double fee;
-            double amortization;
+            double fee = 0;
+            double amortization = 0;
+            double cashFlowExtra = 0;
             double lifeInsurance = initialBalance * this.periodicCosts.lifeInsurance()/100;
             if (i <= this.gracePeriod.getMonths()) {
                 if (this.gracePeriod.getType() == GracePeriodType.TOTAL) {
@@ -239,20 +239,22 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
                     amortization = 0;
                     finalBalance = initialBalance - amortization;
                 }
+                cashFlowExtra = lifeInsurance;
             } else {
                 fee = pago(this.getInterestRate().getTem() + this.periodicCosts.lifeInsurance()/100,
                         this.monthsPaymentTerm - i + 1, initialBalance);
-                amortization = fee - interest - lifeInsurance;
+                amortization = fee + interest + lifeInsurance;
                 finalBalance = initialBalance - amortization;
             }
 
             PeriodicCosts paymentPeriodicCosts = new PeriodicCosts(this.periodicCosts.periodicCommission(),
                     this.periodicCosts.shippingCosts(), this.periodicCosts.administrationExpenses(),
                     lifeInsurance, riskInsurance, this.periodicCosts.monthlyStatementDelivery());
-            
-            // Create the Payment
 
-            // falta valor de finalBalance
+            double cashFlow = fee + paymentPeriodicCosts.getTotalPeriodicCostsWithoutLifeInsurance() + cashFlowExtra;
+            
+            this.payments.add(new Payment(i, paymentDate, this.interestRate.getTem(), this.gracePeriod.getType(),
+                    initialBalance, interest, fee, amortization, paymentPeriodicCosts, finalBalance, cashFlow));
         }
     }
 
@@ -277,7 +279,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
      *      -> FIRST -> Check InterestRate use
      *
      *  FOR SATURDAY
-     *  -> Calculate cashFlow -> JUST MISSING THIS FOR PAYMENTSSS
+     *  -> Calculate cashFlow -> JUST MISSING THIS FOR PAYMENTSSS - CHECK
      *      - Add sum function for PeriodicCosts - CHECK
      *      - Add calculateFinancing()
      *      - Create PeriodicCosts object for each payment - CHECK

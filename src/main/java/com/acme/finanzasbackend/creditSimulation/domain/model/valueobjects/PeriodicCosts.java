@@ -17,4 +17,9 @@ public record PeriodicCosts(
         return periodicCommission + shippingCosts + administrationExpenses +
                 lifeInsurance + riskInsurance + monthlyStatementDelivery;
     }
+
+    public Double getTotalPeriodicCostsWithoutLifeInsurance() {
+        return periodicCommission + shippingCosts + administrationExpenses +
+                riskInsurance + monthlyStatementDelivery;
+    }
 }
