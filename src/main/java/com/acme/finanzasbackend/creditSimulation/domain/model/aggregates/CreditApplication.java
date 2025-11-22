@@ -144,7 +144,54 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double calculateTir() {
-        return 1.0;
+        List<Double> cashFlows = new ArrayList<>();
+
+        // El primer flujo es el financiamiento negativo (desembolso inicial)
+        // Incluye el monto del préstamo menos los costos iniciales que ya pagaste
+        cashFlows.add(-this.financing);
+
+        // Agregar los flujos de caja de cada pago (cuotas + costos periódicos)
+        for (Payment payment : this.payments) {
+            double cashFlow = payment.getFee()
+                    + payment.getPeriodicCosts().lifeInsurance()
+                    + payment.getPeriodicCosts().riskInsurance()
+                    + payment.getPeriodicCosts().periodicCommission()
+                    + payment.getPeriodicCosts().shippingCosts()
+                    + payment.getPeriodicCosts().administrationExpenses()
+                    + payment.getPeriodicCosts().monthlyStatementDelivery();
+            cashFlows.add(cashFlow);
+        }
+
+        // Parámetros para el cálculo del TIR
+        double guess = 0.01; // Tasa inicial (1% mensual)
+        int maxIterations = 100;
+        double tolerance = 0.00001;
+        double rate = guess;
+
+        for (int i = 0; i < maxIterations; i++) {
+            double npv = 0.0;
+            double dnpv = 0.0;
+
+            for (int j = 0; j < cashFlows.size(); j++) {
+                npv += cashFlows.get(j) / Math.pow(1 + rate, j);
+                dnpv += -j * cashFlows.get(j) / Math.pow(1 + rate, j + 1);
+            }
+
+            if (Math.abs(npv) < tolerance) {
+                return rate; // TIR mensual
+            }
+
+            if (Math.abs(dnpv) < tolerance) {
+                return null;
+            }
+
+            rate = rate - npv / dnpv;
+
+            if (rate < -0.99 || Double.isNaN(rate) || Double.isInfinite(rate)) {
+                return null;
+            }
+        }
+        return null;
     }
 
     private Double calculateTceaPercentage() {
