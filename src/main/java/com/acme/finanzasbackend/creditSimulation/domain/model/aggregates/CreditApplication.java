@@ -179,8 +179,9 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
         return 0.0;
     }
 
-    private Double calculateFinancing() {
-         return 0.0;
+    private Double calculateFinancing() {   // monto del prestamo
+         return this.housing.getSalePrice() - this.downPaymentPercentage * this.housing.getSalePrice()
+                 + this.initialCosts.getTotalInitialCost();
     }
 
     private double pago(double tasa, double nPeriod, double currentValue) {
@@ -203,13 +204,13 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
          *         this.interest = interest;                -> interest
          *         this.fee = fee;                          -> fee
          *         this.amortization = amortization;        -> amortization
-         *         this.periodicCosts = periodicCosts;
+         *         this.periodicCosts = periodicCosts;      -> paymentPeriodicCosts
          *              PeriodicCosts(
              *              Double periodicCommission,              -> this.periodicCosts.periodicCommission
              *              Double shippingCosts, // portes         -> this.periodicCosts.shippingCosts
              *              Double administrationExpenses,          -> this.periodicCosts.administrationExpenses
              *              Double lifeInsurance, // desgravamen    -> lifeInsurance
-             *              Double riskInsurance,                   -> this.periodicCosts.riskInsurance
+             *              Double riskInsurance,                   -> riskInsurance
          *                  Double monthlyStatementDelivery         -> this.periodicCosts.monthlyStatementDelivery
              *      )
          *         this.finalBalance = finalBalance;        -> finalBalance
@@ -217,6 +218,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
          *     }
          */
         double finalBalance = this.financing;
+        double riskInsurance = (this.periodicCosts.riskInsurance() * this.housing.getSalePrice())/12;
 
         for (int i = 1; i <= this.monthsPaymentTerm; i++) {
             double initialBalance = finalBalance;
@@ -243,6 +245,10 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
                 amortization = fee - interest - lifeInsurance;
                 finalBalance = initialBalance - amortization;
             }
+
+            PeriodicCosts paymentPeriodicCosts = new PeriodicCosts(this.periodicCosts.periodicCommission(),
+                    this.periodicCosts.shippingCosts(), this.periodicCosts.administrationExpenses(),
+                    lifeInsurance, riskInsurance, this.periodicCosts.monthlyStatementDelivery());
             
             // Create the Payment
 
@@ -271,10 +277,10 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
      *      -> FIRST -> Check InterestRate use
      *
      *  FOR SATURDAY
-     *  -> Calculate cashFlow
-     *      - Add sum function for PeriodicCosts
+     *  -> Calculate cashFlow -> JUST MISSING THIS FOR PAYMENTSSS
+     *      - Add sum function for PeriodicCosts - CHECK
      *      - Add calculateFinancing()
-     *      - Create PeriodicCosts object for each payment
+     *      - Create PeriodicCosts object for each payment - CHECK
      */
 
 }

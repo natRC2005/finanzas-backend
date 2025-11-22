@@ -12,4 +12,9 @@ public record PeriodicCosts(
         Double monthlyStatementDelivery // envio de estado de cuenta
 ) {
     public PeriodicCosts {}
+
+    public Double getTotalPeriodicCosts() {
+        return periodicCommission + shippingCosts + administrationExpenses +
+                lifeInsurance + riskInsurance + monthlyStatementDelivery;
+    }
 }
