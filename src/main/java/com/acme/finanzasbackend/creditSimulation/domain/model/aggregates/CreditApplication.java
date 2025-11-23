@@ -20,7 +20,6 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -169,11 +168,64 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double calculateTir() {
-        return 1.0;
+        List<Double> cashFlows = new ArrayList<>();
+
+        // El primer flujo es el financiamiento negativo (desembolso inicial)
+        // Incluye el monto del préstamo menos los costos iniciales que ya pagaste
+        cashFlows.add(-this.financing);
+
+        // Agregar los flujos de caja de cada pago (cuotas + costos periódicos)
+        for (Payment payment : this.payments) {
+            double cashFlow = payment.getFee()
+                    + payment.getPeriodicCosts().getTotalPeriodicCosts();
+            cashFlows.add(cashFlow);
+        }
+
+        // Parámetros para el cálculo del TIR
+        double guess = 0.01; // Tasa inicial (1% mensual)
+        int maxIterations = 100;
+        double tolerance = 0.00001;
+        double rate = guess;
+
+        for (int i = 0; i < maxIterations; i++) {
+            double npv = 0.0;
+            double dnpv = 0.0;
+
+            for (int j = 0; j < cashFlows.size(); j++) {
+                npv += cashFlows.get(j) / Math.pow(1 + rate, j);
+                dnpv += -j * cashFlows.get(j) / Math.pow(1 + rate, j + 1);
+            }
+
+            if (Math.abs(npv) < tolerance) {
+                return rate; // TIR mensual
+            }
+
+            if (Math.abs(dnpv) < tolerance) {
+                return null;
+            }
+
+            rate = rate - npv / dnpv;
+
+            if (rate < -0.99 || Double.isNaN(rate) || Double.isInfinite(rate)) {
+                return null;
+            }
+        }
+        return null;
     }
 
     private Double calculateTceaPercentage() {
-        return 1.0;
+
+        Double tir = calculateTir();
+        if (tir == null) {
+            return null; // Si no se pudo calcular el TIR, no se puede calcular TCEA
+        }
+        // I6 = número de cuotas por año (12 meses)
+        double cuotasPorAnio = 12.0;
+
+        // Fórmula: TCEA = (1 + TIR)^(cuotas por año) - 1
+        double tcea = Math.pow(1 + tir, cuotasPorAnio) - 1;
+
+        return tcea * 100;
     }
 
     private Double calculateFinalCok() {
@@ -239,7 +291,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
          *                  Double monthlyStatementDelivery         -> this.periodicCosts.monthlyStatementDelivery
              *      )
          *         this.finalBalance = finalBalance;        -> finalBalance
-         *         this.cashFlow = cashFlow;
+         *         this.cashFlow = cashFlow;                -> cashFlow
          *     }
          */
         double finalBalance = this.financing;
@@ -251,8 +303,9 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             LocalDate paymentDate = this.startDate.plusMonths(i-1);
             
             // Periodo de Gracia
-            double fee;
-            double amortization;
+            double fee = 0;
+            double amortization = 0;
+            double cashFlowExtra = 0;
             double lifeInsurance = initialBalance * this.periodicCosts.lifeInsurance()/100;
             if (i <= this.gracePeriod.getMonths()) {
                 if (this.gracePeriod.getType() == GracePeriodType.TOTAL) {
@@ -264,20 +317,22 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
                     amortization = 0;
                     finalBalance = initialBalance - amortization;
                 }
+                cashFlowExtra = lifeInsurance;
             } else {
                 fee = pago(this.getInterestRate().getTem() + this.periodicCosts.lifeInsurance()/100,
                         this.monthsPaymentTerm - i + 1, initialBalance);
-                amortization = fee - interest - lifeInsurance;
+                amortization = fee + interest + lifeInsurance;
                 finalBalance = initialBalance - amortization;
             }
 
             PeriodicCosts paymentPeriodicCosts = new PeriodicCosts(this.periodicCosts.periodicCommission(),
                     this.periodicCosts.shippingCosts(), this.periodicCosts.administrationExpenses(),
                     lifeInsurance, riskInsurance, this.periodicCosts.monthlyStatementDelivery());
-            
-            // Create the Payment
 
-            // falta valor de finalBalance
+            double cashFlow = fee + paymentPeriodicCosts.getTotalPeriodicCostsWithoutLifeInsurance() + cashFlowExtra;
+            
+            this.payments.add(new Payment(i, paymentDate, this.interestRate.getTem(), this.gracePeriod.getType(),
+                    initialBalance, interest, fee, amortization, paymentPeriodicCosts, finalBalance, cashFlow));
         }
     }
 
@@ -302,7 +357,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
      *      -> FIRST -> Check InterestRate use
      *
      *  FOR SATURDAY
-     *  -> Calculate cashFlow -> JUST MISSING THIS FOR PAYMENTSSS
+     *  -> Calculate cashFlow -> JUST MISSING THIS FOR PAYMENTSSS - CHECK
      *      - Add sum function for PeriodicCosts - CHECK
      *      - Add calculateFinancing()
      *      - Create PeriodicCosts object for each payment - CHECK
