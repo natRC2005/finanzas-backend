@@ -152,12 +152,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
         // Agregar los flujos de caja de cada pago (cuotas + costos periódicos)
         for (Payment payment : this.payments) {
             double cashFlow = payment.getFee()
-                    + payment.getPeriodicCosts().lifeInsurance()
-                    + payment.getPeriodicCosts().riskInsurance()
-                    + payment.getPeriodicCosts().periodicCommission()
-                    + payment.getPeriodicCosts().shippingCosts()
-                    + payment.getPeriodicCosts().administrationExpenses()
-                    + payment.getPeriodicCosts().monthlyStatementDelivery();
+                    + payment.getPeriodicCosts().getTotalPeriodicCosts();
             cashFlows.add(cashFlow);
         }
 
@@ -194,7 +189,18 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double calculateTceaPercentage() {
-        return 1.0;
+
+        Double tir = calculateTir();
+        if (tir == null) {
+            return null; // Si no se pudo calcular el TIR, no se puede calcular TCEA
+        }
+        // I6 = número de cuotas por año (12 meses)
+        double cuotasPorAnio = 12.0;
+
+        // Fórmula: TCEA = (1 + TIR)^(cuotas por año) - 1
+        double tcea = Math.pow(1 + tir, cuotasPorAnio) - 1;
+
+        return tcea * 100;
     }
 
     private Double calculateFinalCok() {
