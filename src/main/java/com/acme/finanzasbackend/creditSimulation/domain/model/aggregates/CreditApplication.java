@@ -140,7 +140,32 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double calculateVan() {
-        return 1.0;
+        // 1. Obtener la Tasa de Descuento periódica (TEM COK)
+        Double tasaDescuentoMensual = calculateFinalCok();
+
+        // Verificación básica
+        if (this.payments.isEmpty() || this.financing == null) {
+            return 0.0;
+        }
+
+        // 2. Agregar el Desembolso Inicial (Flujo Positivo en t=0), equivalente a S25
+        double van = -this.financing;
+
+        // 3. Sumar el Valor Actual de los Flujos Futuros (equivalente a VNA(COKi; Flujo))
+        // La iteración comienza en el índice 0, que corresponde al período t=1
+        for (int t = 0; t < this.payments.size(); t++) {
+            Payment payment = this.payments.get(t);
+            // El período 't' en la fórmula de descuento debe ser t+1
+            int tPeriodo = t + 1;
+            // cashFlow debe ser NEGATIVO
+            Double flujoNeto = payment.getCashFlow();
+            if (flujoNeto == null) continue;
+            // Fórmula de Descuento: Flujo_t / (1 + r)^t
+            double denominador = Math.pow(1 + tasaDescuentoMensual, tPeriodo);
+            double valorActualFlujo = flujoNeto / denominador;
+            van += valorActualFlujo;
+        }
+        return van;
     }
 
     private Double calculateTir() {
@@ -152,7 +177,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double calculateFinalCok() {
-        return 0.0;
+        return 1.0;
     }
 
     private Double getTotalInterest() {
