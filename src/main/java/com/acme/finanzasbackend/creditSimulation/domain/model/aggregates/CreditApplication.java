@@ -139,7 +139,6 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double calculateVan() {
-        // 1. Obtener la Tasa de Descuento periódica (TEM COK)
         Double tasaDescuentoMensual = calculateFinalCok();
 
         // Verificación básica
@@ -164,7 +163,8 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             double valorActualFlujo = flujoNeto / denominador;
             van += valorActualFlujo;
         }
-        return van;
+        return van; // 1. Obtener la Tasa de Descuento periódica (TEM COK)
+       
     }
 
     private Double calculateTir() {
@@ -214,7 +214,6 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double calculateTceaPercentage() {
-
         Double tir = calculateTir();
         if (tir == null) {
             return null; // Si no se pudo calcular el TIR, no se puede calcular TCEA
