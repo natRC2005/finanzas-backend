@@ -47,7 +47,7 @@ public class InterestRate extends AuditableModel {
             case CUATRIMESTRAL -> 120.0;
             case SEMESTRAL -> 180.0;
             case ANUAL -> 360.0;
-            case NULA -> 0.0;
+            case NULL -> 0.0;
         };
 
         if (type == InterestRateType.NOMINAL) {
@@ -60,7 +60,7 @@ public class InterestRate extends AuditableModel {
                 case CUATRIMESTRAL -> 120.0;
                 case SEMESTRAL -> 180.0;
                 case ANUAL -> 360.0;
-                case NULA -> 0.0;
+                case NULL -> 0.0;
             };
 
             return Math.pow(1 + (this.percentage / (m / cap)), (30.0 / cap)) - 1;

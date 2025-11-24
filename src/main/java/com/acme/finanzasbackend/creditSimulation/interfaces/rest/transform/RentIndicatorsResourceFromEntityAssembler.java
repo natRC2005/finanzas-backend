@@ -9,7 +9,7 @@ public class RentIndicatorsResourceFromEntityAssembler {
                 entity.cok() != null ? entity.cok() : null,
                 entity.tir() != null ? entity.tir() : null,
                 entity.tcea() != null ? entity.tcea() : null,
-                entity.var() != null ? entity.var() : null
+                entity.van() != null ? entity.van() : null
         );
     }
 }

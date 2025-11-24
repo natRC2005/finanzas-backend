@@ -17,6 +17,7 @@ public class GracePeriod extends AuditableModel {
     public GracePeriod(CreateGracePeriodCommand command) {
         this.type = GracePeriodType.valueOf(command.type());
         this.months = command.months();
+        if (this.months == 0) this.type = GracePeriodType.NULL;
         if (this.type == GracePeriodType.NULL) this.months = 0;
     }
 
@@ -24,6 +25,7 @@ public class GracePeriod extends AuditableModel {
                        Integer months) {
         this.type = GracePeriodType.valueOf(type);
         this.months = months;
+        if (this.months == 0) this.type = GracePeriodType.NULL;
         if (this.type == GracePeriodType.NULL) this.months = 0;
     }
 }

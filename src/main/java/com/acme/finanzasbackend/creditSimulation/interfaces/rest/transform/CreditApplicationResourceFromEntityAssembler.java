@@ -18,6 +18,7 @@ public class CreditApplicationResourceFromEntityAssembler {
                 entity.getFinanceEntityApproved().accepted(),
                 entity.getFinanceEntityApproved().reason(),
                 InterestRateResourceFromEntityAssembler.toResourceFromEntity(entity.getInterestRate()),
+                InterestRateResourceFromEntityAssembler.toResourceFromEntity(entity.getCok()),
                 GracePeriodResourceFromEntityAssembler.toResourceFromEntity(entity.getGracePeriod()),
                 InitialCostsResourceFromEntityAssembler.toResourceFromEntity(entity.getInitialCosts()),
                 PeriodicCostsResourceFromEntityAssembler.toResourceFromEntity(entity.getPeriodicCosts()),

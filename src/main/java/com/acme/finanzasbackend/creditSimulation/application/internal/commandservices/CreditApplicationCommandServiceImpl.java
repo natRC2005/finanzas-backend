@@ -80,21 +80,23 @@ public class CreditApplicationCommandServiceImpl implements CreditApplicationCom
         var interestRate = new InterestRate(command.interestRateType(), command.interestRatePeriod(),
                 command.interestRatePercentage(), command.interestRateNominalCapitalization());
 
+        var cok = new InterestRate(command.cokType(), command.cokPeriod(),
+                command.cokPercentage(), command.cokNominalCapitalization());
+
         var bonus = new Bonus(command.isBonusRequired(), housing.getHousingCategory(),
                 housing.getSalePrice(), currency, client.getIsIntegrator());
 
         var gracePeriodValidTime = command.gracePeriodMonths();
-        if ((housing.getHousingState() == HousingState.EN_PROYECTO ||
-                housing.getHousingState() == HousingState.EN_CONSTRUCCION) &&
-                gracePeriodValidTime > 6) {
-            gracePeriodValidTime = 6;
+        if (housing.getHousingState() == HousingState.NUEVO ||
+                housing.getHousingState() == HousingState.SEGUNDA) {
+            gracePeriodValidTime = 0;
         }
         var gracePeriod = new GracePeriod(command.gracePeriodType(), gracePeriodValidTime);
 
         boolean hasAnotherHousingFinancing = creditApplicationRepository.existsByClient(client);
 
         var creditApplication = new CreditApplication(command, client, housing, currency, financeEntity,
-                interestRate, bonus, gracePeriod, hasAnotherHousingFinancing);
+                interestRate, cok, bonus, gracePeriod, hasAnotherHousingFinancing);
 
         try {
             interestRateRepository.save(interestRate);

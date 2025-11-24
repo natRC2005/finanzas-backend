@@ -13,8 +13,13 @@ public record PeriodicCosts(
 ) {
     public PeriodicCosts {}
 
-    public Double getTotalPeriodicCosts() {
-        return periodicCommission + shippingCosts + administrationExpenses +
-                lifeInsurance + riskInsurance + monthlyStatementDelivery;
+    public Double totalPeriodicCosts() {
+        return periodicCommission + shippingCosts + administrationExpenses -
+                lifeInsurance - riskInsurance + monthlyStatementDelivery;
+    }
+
+    public Double totalPeriodicCostsWithoutLifeInsurance() {
+        return periodicCommission + shippingCosts + administrationExpenses -
+                riskInsurance + monthlyStatementDelivery;
     }
 }
