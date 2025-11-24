@@ -1,5 +1,6 @@
 package com.acme.finanzasbackend.creditSimulation.interfaces.rest.controllers;
 
+import com.acme.finanzasbackend.creditSimulation.domain.model.commands.DeleteCreditApplicationCommand;
 import com.acme.finanzasbackend.creditSimulation.domain.model.queries.GetAllCreditApplicationsQuery;
 import com.acme.finanzasbackend.creditSimulation.domain.model.queries.GetCreditApplicationByIdQuery;
 import com.acme.finanzasbackend.creditSimulation.domain.services.CreditApplicationCommandService;
@@ -78,5 +79,19 @@ public class CreditApplicationController {
                 .map(CreditApplicationResourceFromEntityAssembler::toResourceFromEntity)
                 .toList();
         return ResponseEntity.ok(creditApplicationResources);
+    }
+
+    @DeleteMapping("/{creditApplicationId}")
+    @Operation(summary = "Delete Credit Application", description = "Delete Credit Application")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Credit Application deleted successfully."),
+            @ApiResponse(responseCode = "404", description = "Credit Application not found.")})
+    public ResponseEntity<CreditApplicationResource> deleteCreditApplication(@PathVariable Long creditApplicationId) {
+        DeleteCreditApplicationCommand command = new DeleteCreditApplicationCommand(creditApplicationId);
+        var creditApplication = creditApplicationCommandService.handle(command);
+        if (creditApplication.isEmpty()) return ResponseEntity.notFound().build();
+        var creditApplicationEntity = creditApplication.get();
+        var creditApplicationResource = CreditApplicationResourceFromEntityAssembler.toResourceFromEntity(creditApplicationEntity);
+        return ResponseEntity.ok(creditApplicationResource);
     }
 }

@@ -4,6 +4,7 @@ import com.acme.finanzasbackend.clientManagement.infrastructure.persistence.jpa.
 import com.acme.finanzasbackend.creditSimulation.domain.model.aggregates.Bonus;
 import com.acme.finanzasbackend.creditSimulation.domain.model.aggregates.CreditApplication;
 import com.acme.finanzasbackend.creditSimulation.domain.model.commands.CreateCreditApplicationCommand;
+import com.acme.finanzasbackend.creditSimulation.domain.model.commands.DeleteCreditApplicationCommand;
 import com.acme.finanzasbackend.creditSimulation.domain.model.entities.GracePeriod;
 import com.acme.finanzasbackend.creditSimulation.domain.model.entities.InterestRate;
 import com.acme.finanzasbackend.creditSimulation.domain.services.CreditApplicationCommandService;
@@ -16,6 +17,8 @@ import com.acme.finanzasbackend.housingFinance.infrastructure.persistence.jpa.re
 import com.acme.finanzasbackend.housingFinance.infrastructure.persistence.jpa.repositories.HousingRepository;
 import com.acme.finanzasbackend.shared.infrastructure.persistence.jpa.repositories.CurrencyRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class CreditApplicationCommandServiceImpl implements CreditApplicationCommandService {
@@ -112,5 +115,13 @@ public class CreditApplicationCommandServiceImpl implements CreditApplicationCom
             throw new IllegalArgumentException(ex);
         }
         return creditApplication.getId();
+    }
+
+    @Override
+    public Optional<CreditApplication> handle(DeleteCreditApplicationCommand command) {
+        CreditApplication creditApplication = creditApplicationRepository.findById(command.id())
+                .orElseThrow(() -> new IllegalArgumentException("Credit application not found with ID: " + command.id()));
+        creditApplicationRepository.delete(creditApplication);
+        return Optional.of(creditApplication);
     }
 }
