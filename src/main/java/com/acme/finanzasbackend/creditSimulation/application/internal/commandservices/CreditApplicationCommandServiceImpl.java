@@ -5,6 +5,7 @@ import com.acme.finanzasbackend.creditSimulation.domain.model.aggregates.Bonus;
 import com.acme.finanzasbackend.creditSimulation.domain.model.aggregates.CreditApplication;
 import com.acme.finanzasbackend.creditSimulation.domain.model.commands.CreateCreditApplicationCommand;
 import com.acme.finanzasbackend.creditSimulation.domain.model.commands.DeleteCreditApplicationCommand;
+import com.acme.finanzasbackend.creditSimulation.domain.model.commands.UpdateCreditApplicationCommand;
 import com.acme.finanzasbackend.creditSimulation.domain.model.entities.GracePeriod;
 import com.acme.finanzasbackend.creditSimulation.domain.model.entities.InterestRate;
 import com.acme.finanzasbackend.creditSimulation.domain.services.CreditApplicationCommandService;
@@ -122,6 +123,75 @@ public class CreditApplicationCommandServiceImpl implements CreditApplicationCom
         CreditApplication creditApplication = creditApplicationRepository.findById(command.id())
                 .orElseThrow(() -> new IllegalArgumentException("Credit application not found with ID: " + command.id()));
         creditApplicationRepository.delete(creditApplication);
+        return Optional.of(creditApplication);
+    }
+
+    @Override
+    public Optional<CreditApplication> handle(UpdateCreditApplicationCommand command) {
+        CreditApplication creditApplication = creditApplicationRepository.findById(command.id())
+                .orElseThrow(() -> new IllegalArgumentException("Credit application not found with ID: " + command.id()));
+
+        var client = clientRepository.findById(command.clientId())
+                .orElseThrow(() -> new IllegalArgumentException("Client not found with ID: " + command.clientId()));
+        var housing = housingRepository.findById(command.housingId())
+                .orElseThrow(() -> new IllegalArgumentException("Housing not found with ID: " + command.housingId()));
+        var currency = currencyRepository.findById(command.currencyId())
+                .orElseThrow(() -> new IllegalArgumentException("Currency not found with ID: " + command.currencyId()));
+
+        if (client.getCurrency() != currency) {
+            client.exchangeSalaryCurrency(currency);
+            try {
+                clientRepository.save(client);
+            } catch (Exception ex) {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+        if (housing.getCurrency() != currency) {
+            housing.exchangeSalePriceCurrency(currency);
+            try {
+                housingRepository.save(housing);
+            } catch (Exception ex) {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+
+        var financeEntity = financeEntityRepository.findById(command.financialEntityId())
+                .orElseThrow(() -> new IllegalArgumentException("Financial entity not found with ID: " + command.financialEntityId()));
+
+        var interestRate = new InterestRate(command.interestRateType(), command.interestRatePeriod(),
+                command.interestRatePercentage(), command.interestRateNominalCapitalization());
+
+        var cok = new InterestRate(command.cokType(), command.cokPeriod(),
+                command.cokPercentage(), command.cokNominalCapitalization());
+
+        var bonus = new Bonus(command.isBonusRequired(), housing.getHousingCategory(),
+                housing.getSalePrice(), currency, client.getIsIntegrator());
+
+        var gracePeriodValidTime = command.gracePeriodMonths();
+        if (housing.getHousingState() == HousingState.NUEVO ||
+                housing.getHousingState() == HousingState.SEGUNDA) {
+            gracePeriodValidTime = 0;
+        }
+        var gracePeriod = new GracePeriod(command.gracePeriodType(), gracePeriodValidTime);
+
+        boolean hasAnotherHousingFinancing = creditApplicationRepository.existsByClient(client);
+
+        creditApplication.modifyCreditApplication(command, client, housing, currency, financeEntity,
+                interestRate, cok, bonus, gracePeriod, hasAnotherHousingFinancing);
+
+        try {
+            interestRateRepository.save(interestRate);
+            bonusRepository.save(bonus);
+            gracePeriodRepository.save(gracePeriod);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(ex);
+        }
+
+        try {
+            creditApplicationRepository.save(creditApplication);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(ex);
+        }
         return Optional.of(creditApplication);
     }
 }

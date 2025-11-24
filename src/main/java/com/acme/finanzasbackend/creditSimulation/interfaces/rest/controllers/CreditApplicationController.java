@@ -7,8 +7,10 @@ import com.acme.finanzasbackend.creditSimulation.domain.services.CreditApplicati
 import com.acme.finanzasbackend.creditSimulation.domain.services.CreditApplicationQueryService;
 import com.acme.finanzasbackend.creditSimulation.interfaces.rest.resources.CreateCreditApplicationResource;
 import com.acme.finanzasbackend.creditSimulation.interfaces.rest.resources.CreditApplicationResource;
+import com.acme.finanzasbackend.creditSimulation.interfaces.rest.resources.UpdateCreditApplicationResource;
 import com.acme.finanzasbackend.creditSimulation.interfaces.rest.transform.CreateCreditApplicationCommandFromResourceAssembler;
 import com.acme.finanzasbackend.creditSimulation.interfaces.rest.transform.CreditApplicationResourceFromEntityAssembler;
+import com.acme.finanzasbackend.creditSimulation.interfaces.rest.transform.UpdateCreditApplicationCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -93,5 +95,20 @@ public class CreditApplicationController {
         var creditApplicationEntity = creditApplication.get();
         var creditApplicationResource = CreditApplicationResourceFromEntityAssembler.toResourceFromEntity(creditApplicationEntity);
         return ResponseEntity.ok(creditApplicationResource);
+    }
+
+    @PutMapping("/{creditApplicationId}")
+    @Operation(summary = "Update Credit Application", description = "Updates all editable fields of a Credit Application")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Credit Application updated"),
+            @ApiResponse(responseCode = "404", description = "Credit Application not found")
+    })
+    public ResponseEntity<CreditApplicationResource> updateCreditApplication(@PathVariable Long creditApplicationId, @RequestBody UpdateCreditApplicationResource resource) {
+        var updateCreditApplicationCommand = UpdateCreditApplicationCommandFromResourceAssembler.toCommandFromResource(creditApplicationId, resource);
+        var updatedCreditApplication = creditApplicationCommandService.handle(updateCreditApplicationCommand);
+        if (updatedCreditApplication.isEmpty()) return ResponseEntity.notFound().build();
+        var updatedCreditApplicationEntity = updatedCreditApplication.get();
+        var updatedCreditApplicationResource = CreditApplicationResourceFromEntityAssembler.toResourceFromEntity(updatedCreditApplicationEntity);
+        return ResponseEntity.ok(updatedCreditApplicationResource);
     }
 }

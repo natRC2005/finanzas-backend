@@ -2,6 +2,7 @@ package com.acme.finanzasbackend.creditSimulation.domain.model.aggregates;
 
 import com.acme.finanzasbackend.clientManagement.domain.model.aggregates.Client;
 import com.acme.finanzasbackend.creditSimulation.domain.model.commands.CreateCreditApplicationCommand;
+import com.acme.finanzasbackend.creditSimulation.domain.model.commands.UpdateCreditApplicationCommand;
 import com.acme.finanzasbackend.creditSimulation.domain.model.entities.GracePeriod;
 import com.acme.finanzasbackend.creditSimulation.domain.model.entities.InterestRate;
 import com.acme.finanzasbackend.creditSimulation.domain.model.entities.Payment;
@@ -59,7 +60,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     @JoinColumn(name = "cok_id", nullable = false, unique = true)
     private InterestRate cok;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "bonus_id", nullable = false)
     private Bonus bonus;
 
@@ -95,6 +96,51 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             InterestRate cok, Bonus bonus, GracePeriod gracePeriod,
             Boolean hasAnotherHousingFinancing) {
         this.realStateCompanyId = new RealStateCompanyId(command.realStateCompanyId());
+        this.startDate = command.startDate();
+        this.client = client;
+        this.housing = housing;
+        this.currency = currency;
+        this.financeEntity = financeEntity;
+        this.interestRate = interestRate;
+        this.cok = cok;
+        this.bonus = bonus;
+        this.gracePeriod = gracePeriod;
+        this.initialCosts = new InitialCosts(command.notaryCost(), command.registryCost(),
+                financeEntity.getAppraisal(command.appraisal(), housing.getHousingState(), housing.getProvince(), currency),
+                financeEntity.getStudyCommission(command.studyCommission(), currency),
+                command.activationCommission(), command.professionalFeesCost(),
+                financeEntity.getDocumentationFee(command.documentationFee(), currency, housing.getSalePrice()));
+        this.periodicCosts = new PeriodicCosts(command.periodicCommission(), command.shippingCosts(),
+                command.administrationExpenses(), financeEntity.getLifeInsurance(command.lifeInsurance(), housing.getSalePrice()),
+                financeEntity.getRiskInsurance(command.riskInsurance(), this.gracePeriod.getType()), command.monthlyStatementDelivery());
+        this.downPaymentPercentage = command.downPaymentPercentage();
+        this.financing = calculateFinancing();
+        this.monthsPaymentTerm = command.yearsPaymentTerm() * 12;
+        this.financeEntityApproved = getFinanceEntityApproved(command.hasCreditHistory(), hasAnotherHousingFinancing);
+        if (this.financeEntityApproved.accepted()){
+            generatePayments();
+            this.rentIndicators = new RentIndicators(this.cok.getTem() * 100, calculateTir(),
+                    calculateTceaPercentage(), calculateVan());
+            this.totals = new Totals(getTotalInterest(), getTotalCapitalAmortization(),
+                    getTotalLifeInsurance(), getTotalRiskInsurance(),
+                    getTotalPeriodCommission(), getTotalAdministrationFee());
+        } else {
+            this.rentIndicators = new RentIndicators(0.0, 0.0,
+                    0.0, 0.0);
+            this.totals = new Totals(0.0, 0.0,
+                    0.0, 0.0,
+                    0.0, 0.0);
+        }
+    }
+
+    public void modifyCreditApplication(
+            UpdateCreditApplicationCommand command,
+            Client client, Housing housing, Currency currency,
+            FinanceEntity financeEntity, InterestRate interestRate,
+            InterestRate cok, Bonus bonus, GracePeriod gracePeriod,
+            Boolean hasAnotherHousingFinancing
+    ) {
+        payments.clear();
         this.startDate = command.startDate();
         this.client = client;
         this.housing = housing;
@@ -276,7 +322,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
 
     private double pago(double tasa, double nPeriod, double currentValue) {
         double pow = Math.pow(1 + tasa, -nPeriod);
-        return - (tasa * currentValue)/(1 - pow);   // consder negative
+        return - (tasa * currentValue)/(1 - pow);   // consider negative
     }
 
     public void generatePayments() {
