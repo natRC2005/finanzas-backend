@@ -119,8 +119,11 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             this.rentIndicators = new RentIndicators(0.0, 0.0,
                     0.0, 0.0);
         } else {
-            this.totals = null;
-            this.rentIndicators = null;
+            this.totals = new Totals(0.0, 0.0,
+                    0.0, 0.0,
+                    0.0, 0.0);
+            this.rentIndicators = new RentIndicators(0.0, 0.0,
+                    0.0, 0.0);
         }
     }
 
@@ -179,13 +182,13 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double calculateFinancing() {   // monto del prestamo
-         return this.housing.getSalePrice() - this.downPaymentPercentage * this.housing.getSalePrice()
+         return this.housing.getSalePrice() - this.downPaymentPercentage/100 * this.housing.getSalePrice()
                  + this.initialCosts.getTotalInitialCost();
     }
 
     private double pago(double tasa, double nPeriod, double currentValue) {
-        double pow = Math.pow(1 + tasa, nPeriod);
-        return (tasa * (currentValue * pow))/(1 * (pow - 1));   // consder negative
+        double pow = Math.pow(1 + tasa, -nPeriod);
+        return - (tasa * currentValue)/(1 - pow);   // consder negative
     }
 
     public void generatePayments() {
@@ -217,44 +220,50 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
          *     }
          */
         double finalBalance = this.financing;
-        double riskInsurance = (this.periodicCosts.riskInsurance() * this.housing.getSalePrice())/12;
+        double riskInsurance = - (this.periodicCosts.riskInsurance()/100 * this.housing.getSalePrice())/12;
 
         for (int i = 1; i <= this.monthsPaymentTerm; i++) {
             double initialBalance = finalBalance;
-            double interest = initialBalance * this.interestRate.getTem();
+            double interest = - initialBalance * this.interestRate.getTem();
             LocalDate paymentDate = this.startDate.plusMonths(i-1);
             
             // Periodo de Gracia
             double fee = 0;
             double amortization = 0;
             double cashFlowExtra = 0;
-            double lifeInsurance = initialBalance * this.periodicCosts.lifeInsurance()/100;
+            double lifeInsurance = - initialBalance * this.periodicCosts.lifeInsurance()/100;
+            GracePeriodType gracePeriodType = GracePeriodType.NULL;
             if (i <= this.gracePeriod.getMonths()) {
                 if (this.gracePeriod.getType() == GracePeriodType.TOTAL) {
                     fee = 0;
                     amortization = 0;
-                    finalBalance = initialBalance + interest;
+                    finalBalance = initialBalance - interest;
+                    gracePeriodType = GracePeriodType.TOTAL;
                 } else if (this.gracePeriod.getType() == GracePeriodType.PARCIAL) {
                     fee = interest;
                     amortization = 0;
-                    finalBalance = initialBalance - amortization;
+                    finalBalance = initialBalance + amortization;
+                    gracePeriodType = GracePeriodType.PARCIAL;
                 }
                 cashFlowExtra = lifeInsurance;
             } else {
                 fee = pago(this.getInterestRate().getTem() + this.periodicCosts.lifeInsurance()/100,
                         this.monthsPaymentTerm - i + 1, initialBalance);
-                amortization = fee + interest + lifeInsurance;
-                finalBalance = initialBalance - amortization;
+                amortization = fee - interest - lifeInsurance;
+                finalBalance = initialBalance + amortization;
             }
 
             PeriodicCosts paymentPeriodicCosts = new PeriodicCosts(this.periodicCosts.periodicCommission(),
                     this.periodicCosts.shippingCosts(), this.periodicCosts.administrationExpenses(),
                     lifeInsurance, riskInsurance, this.periodicCosts.monthlyStatementDelivery());
 
-            double cashFlow = fee + paymentPeriodicCosts.getTotalPeriodicCostsWithoutLifeInsurance() + cashFlowExtra;
+            double cashFlow = fee - paymentPeriodicCosts.totalPeriodicCostsWithoutLifeInsurance() + cashFlowExtra;
             
-            this.payments.add(new Payment(i, paymentDate, this.interestRate.getTem(), this.gracePeriod.getType(),
-                    initialBalance, interest, fee, amortization, paymentPeriodicCosts, finalBalance, cashFlow));
+            Payment payment = new Payment(i, paymentDate, this.interestRate.getTem(), gracePeriodType,
+                    initialBalance, interest, fee, amortization, paymentPeriodicCosts, finalBalance, cashFlow);
+
+            payment.setCreditApplication(this);
+            this.payments.add(payment);
         }
     }
 

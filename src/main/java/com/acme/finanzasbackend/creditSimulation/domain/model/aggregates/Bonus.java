@@ -108,13 +108,13 @@ public class Bonus extends AuditableAbstractAggregateRoot<Bonus> {
                 }
             }
             else {
-                this.bonusType = null;
+                this.bonusType = BonusType.NULL;
                 this.isApplied = false;
                 this.givenAmount = 0.00;
             }
         }
         else {
-            this.bonusType = null;
+            this.bonusType = BonusType.NULL;
             this.isApplied = false;
             this.givenAmount = 0.00;
         }
@@ -204,13 +204,13 @@ public class Bonus extends AuditableAbstractAggregateRoot<Bonus> {
                 }
             }
             else {
-                this.bonusType = null;
+                this.bonusType = BonusType.NULL;
                 this.isApplied = false;
                 this.givenAmount = 0.00;
             }
         }
         else {
-            this.bonusType = null;
+            this.bonusType = BonusType.NULL;
             this.isApplied = false;
             this.givenAmount = 0.00;
         }
