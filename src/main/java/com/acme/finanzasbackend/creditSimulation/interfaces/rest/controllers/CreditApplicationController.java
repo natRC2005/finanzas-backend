@@ -1,5 +1,6 @@
 package com.acme.finanzasbackend.creditSimulation.interfaces.rest.controllers;
 
+import com.acme.finanzasbackend.creditSimulation.domain.model.queries.GetAllCreditApplicationsQuery;
 import com.acme.finanzasbackend.creditSimulation.domain.model.queries.GetCreditApplicationByIdQuery;
 import com.acme.finanzasbackend.creditSimulation.domain.services.CreditApplicationCommandService;
 import com.acme.finanzasbackend.creditSimulation.domain.services.CreditApplicationQueryService;
@@ -14,6 +15,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -62,5 +65,18 @@ public class CreditApplicationController {
         var creditApplicationEntity = creditApplication.get();
         var creditApplicationResource = CreditApplicationResourceFromEntityAssembler.toResourceFromEntity(creditApplicationEntity);
         return ResponseEntity.ok(creditApplicationResource);
+    }
+
+    @GetMapping("/{realStateCompanyId}/creditApplications")
+    @Operation(summary = "Get all Credit Applications", description = "Get all available Credit Applications in the system by realStateCompanyId.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Credit Applications retrieved successfully.")})
+    public ResponseEntity<List<CreditApplicationResource>> getAllCreditApplications(@PathVariable Long realStateCompanyId) {
+        var getAllCreditApplicationsQuery = new GetAllCreditApplicationsQuery(realStateCompanyId);
+        var creditApplications = creditApplicationQueryService.handle(getAllCreditApplicationsQuery);
+        var creditApplicationResources = creditApplications.stream()
+                .map(CreditApplicationResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(creditApplicationResources);
     }
 }

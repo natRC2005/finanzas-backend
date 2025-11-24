@@ -72,7 +72,7 @@ public class HousingController {
     @Operation(summary = "Get all Housing", description = "Get all available Housing in the system by realStateCompanyId.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Housing retrieved successfully.")})
-    public ResponseEntity<List<HousingResource>> getAllCurrency(@PathVariable Long realStateCompanyId) {
+    public ResponseEntity<List<HousingResource>> getAllHousings(@PathVariable Long realStateCompanyId) {
         var getAllHousingQuery = new GetAllHousingQuery(realStateCompanyId);
         var housing = housingQueryService.handle(getAllHousingQuery);
         var housingResources = housing.stream()

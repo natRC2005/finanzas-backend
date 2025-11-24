@@ -72,7 +72,7 @@ public class ClientController {
     @Operation(summary = "Get all clients", description = "Get all available clients in the system by realStateCompanyId.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Clients retrieved successfully.")})
-    public ResponseEntity<List<ClientResource>> getAllCurrency(@PathVariable Long realStateCompanyId) {
+    public ResponseEntity<List<ClientResource>> getAllClients(@PathVariable Long realStateCompanyId) {
         var getAllClientsQuery = new GetAllClientsQuery(realStateCompanyId);
         var clients = clientQueryService.handle(getAllClientsQuery);
         var clientResources = clients.stream()
