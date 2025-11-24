@@ -121,7 +121,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             this.totals = new Totals(0.0, 0.0,
                     0.0, 0.0,
                     0.0, 0.0);
-            this.rentIndicators = new RentIndicators(this.cok.getTem(), calculateTir(),
+            this.rentIndicators = new RentIndicators(this.cok.getTem() * 100, calculateTir(),
                     calculateTceaPercentage(), calculateVan());
         } else {
             this.totals = new Totals(0.0, 0.0,
@@ -147,36 +147,22 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double calculateVan() {
-        Double tasaDescuentoMensual = this.cok.getTem();
+        List<Double> flows = buildCashFlowList();
+        double vnaValue = vna(flows);
+        return this.financing + vnaValue;
+    }
 
-        // Verificación básica
-        if (this.payments.isEmpty() || this.financing == null) {
-            return 0.0;
+    public double vna(List<Double> cashFlows) {
+        double npv = 0.0;
+        for (int t = 1; t < cashFlows.size(); t++) {
+            npv += cashFlows.get(t) / Math.pow(1 + this.cok.getTem(), t);
         }
 
-        // 2. Agregar el Desembolso Inicial (Flujo Positivo en t=0), equivalente a S25
-        double van = -this.financing;
-
-        // 3. Sumar el Valor Actual de los Flujos Futuros (equivalente a VNA(COKi; Flujo))
-        // La iteración comienza en el índice 0, que corresponde al período t=1
-        for (int t = 0; t < this.payments.size(); t++) {
-            Payment payment = this.payments.get(t);
-            // El período 't' en la fórmula de descuento debe ser t+1
-            int tPeriodo = t + 1;
-            // cashFlow debe ser NEGATIVO
-            Double flujoNeto = payment.getCashFlow();
-            if (flujoNeto == null) continue;
-            // Fórmula de Descuento: Flujo_t / (1 + r)^t
-            double denominador = Math.pow(1 + tasaDescuentoMensual, tPeriodo);
-            double valorActualFlujo = flujoNeto / denominador;
-            van += valorActualFlujo;
-        }
-        return van; // 1. Obtener la Tasa de Descuento periódica (TEM COK)
-       
+        return npv;
     }
 
     public double calculateTir() {
-        return irr(0.01);
+        return irr(0.01) * 100;
     }
 
     public double irr(double guess) {
@@ -228,16 +214,10 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double calculateTceaPercentage() {
-        Double tir = calculateTir();
-        if (tir == null) {
-            return null; // Si no se pudo calcular el TIR, no se puede calcular TCEA
-        }
-        // I6 = número de cuotas por año (12 meses)
-        double cuotasPorAnio = 12.0;
+        Double tir = calculateTir()/100;
 
         // Fórmula: TCEA = (1 + TIR)^(cuotas por año) - 1
-        double tcea = Math.pow(1 + tir, cuotasPorAnio) - 1;
-
+        double tcea = Math.pow(1 + tir, 12) - 1;
         return tcea * 100;
     }
 
