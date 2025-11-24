@@ -118,16 +118,16 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
         this.financeEntityApproved = getFinanceEntityApproved(command.hasCreditHistory(), hasAnotherHousingFinancing);
         if (this.financeEntityApproved.accepted()){
             generatePayments();
-            this.totals = new Totals(0.0, 0.0,
-                    0.0, 0.0,
-                    0.0, 0.0);
             this.rentIndicators = new RentIndicators(this.cok.getTem() * 100, calculateTir(),
                     calculateTceaPercentage(), calculateVan());
-        } else {
-            this.totals = new Totals(0.0, 0.0,
+            this.totals = new Totals(getTotalInterest(), 0.0,
                     0.0, 0.0,
                     0.0, 0.0);
+        } else {
             this.rentIndicators = new RentIndicators(0.0, 0.0,
+                    0.0, 0.0);
+            this.totals = new Totals(0.0, 0.0,
+                    0.0, 0.0,
                     0.0, 0.0);
         }
     }
@@ -222,7 +222,11 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double getTotalInterest() {
-        return 0.0;
+        double interest = 0.0;
+        for (Payment p : this.payments) {
+            interest += -(p.getFee()-p.getAmortization()-p.getPeriodicCosts().lifeInsurance());
+        }
+        return interest;
     }
 
     private Double getTotalCapitalAmortization() {
