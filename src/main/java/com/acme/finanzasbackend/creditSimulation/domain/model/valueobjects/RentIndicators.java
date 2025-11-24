@@ -7,7 +7,7 @@ public record RentIndicators(
         Double cok,
         Double tir,
         Double tcea,
-        Double var
+        Double van
 ) {
     public RentIndicators {}
 }

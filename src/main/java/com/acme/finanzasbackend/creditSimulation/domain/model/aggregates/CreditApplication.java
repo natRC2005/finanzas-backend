@@ -121,8 +121,8 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             this.totals = new Totals(0.0, 0.0,
                     0.0, 0.0,
                     0.0, 0.0);
-            this.rentIndicators = new RentIndicators(0.0, 0.0,
-                    0.0, 0.0);
+            this.rentIndicators = new RentIndicators(this.cok.getTem(), calculateTir(),
+                    calculateTceaPercentage(), calculateVan());
         } else {
             this.totals = new Totals(0.0, 0.0,
                     0.0, 0.0,
@@ -147,7 +147,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double calculateVan() {
-        Double tasaDescuentoMensual = calculateFinalCok();
+        Double tasaDescuentoMensual = this.cok.getTem();
 
         // Verificación básica
         if (this.payments.isEmpty() || this.financing == null) {
@@ -175,50 +175,56 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
        
     }
 
-    private Double calculateTir() {
-        List<Double> cashFlows = new ArrayList<>();
+    public double calculateTir() {
+        return irr(0.01);
+    }
 
-        // El primer flujo es el financiamiento negativo (desembolso inicial)
-        // Incluye el monto del préstamo menos los costos iniciales que ya pagaste
-        cashFlows.add(-this.financing);
+    public double irr(double guess) {
+        List<Double> cashFlows = buildCashFlowList();
 
-        // Agregar los flujos de caja de cada pago (cuotas + costos periódicos)
-        for (Payment payment : this.payments) {
-            double cashFlow = payment.getFee()
-                    + payment.getPeriodicCosts().getTotalPeriodicCosts();
-            cashFlows.add(cashFlow);
-        }
-
-        // Parámetros para el cálculo del TIR
-        double guess = 0.01; // Tasa inicial (1% mensual)
-        int maxIterations = 100;
-        double tolerance = 0.00001;
-        double rate = guess;
+        double x0 = guess;
+        double x1;
+        int maxIterations = 1000;
+        double tolerance = 1e-7;
 
         for (int i = 0; i < maxIterations; i++) {
-            double npv = 0.0;
-            double dnpv = 0.0;
+            double fValue = npv(cashFlows, x0);
+            double fDerivative = npvDerivative(cashFlows, x0);
 
-            for (int j = 0; j < cashFlows.size(); j++) {
-                npv += cashFlows.get(j) / Math.pow(1 + rate, j);
-                dnpv += -j * cashFlows.get(j) / Math.pow(1 + rate, j + 1);
-            }
-
-            if (Math.abs(npv) < tolerance) {
-                return rate; // TIR mensual
-            }
-
-            if (Math.abs(dnpv) < tolerance) {
-                return null;
-            }
-
-            rate = rate - npv / dnpv;
-
-            if (rate < -0.99 || Double.isNaN(rate) || Double.isInfinite(rate)) {
-                return null;
-            }
+            if (Math.abs(fDerivative) < 1e-10) break;
+            x1 = x0 - fValue / fDerivative;
+            if (Math.abs(x1 - x0) <= tolerance) return x1;
+            x0 = x1;
         }
-        return null;
+        return x0;
+    }
+
+    private List<Double> buildCashFlowList() {
+        List<Double> flows = new ArrayList<>();
+        double initialFlow = this.financing;
+        flows.add(initialFlow);
+
+        for (Payment p : this.payments) {
+            flows.add(p.getCashFlow());
+        }
+
+        return flows;
+    }
+
+    public static double npv(List<Double> cashFlows, double rate) {
+        double npv = 0.0;
+        for (int t = 0; t < cashFlows.size(); t++) {
+            npv += cashFlows.get(t) / Math.pow(1 + rate, t);
+        }
+        return npv;
+    }
+
+    public static double npvDerivative(List<Double> cashFlows, double rate) {
+        double derivative = 0.0;
+        for (int t = 1; t < cashFlows.size(); t++) {
+            derivative += -t * cashFlows.get(t) / Math.pow(1 + rate, t + 1);
+        }
+        return derivative;
     }
 
     private Double calculateTceaPercentage() {
@@ -233,10 +239,6 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
         double tcea = Math.pow(1 + tir, cuotasPorAnio) - 1;
 
         return tcea * 100;
-    }
-
-    private Double calculateFinalCok() {
-        return 1.0;
     }
 
     private Double getTotalInterest() {
