@@ -120,9 +120,9 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             generatePayments();
             this.rentIndicators = new RentIndicators(this.cok.getTem() * 100, calculateTir(),
                     calculateTceaPercentage(), calculateVan());
-            this.totals = new Totals(getTotalInterest(), 0.0,
-                    0.0, 0.0,
-                    0.0, 0.0);
+            this.totals = new Totals(getTotalInterest(), getTotalCapitalAmortization(),
+                    getTotalLifeInsurance(), getTotalRiskInsurance(),
+                    getTotalPeriodCommission(), getTotalAdministrationFee());
         } else {
             this.rentIndicators = new RentIndicators(0.0, 0.0,
                     0.0, 0.0);
@@ -230,23 +230,43 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double getTotalCapitalAmortization() {
-        return 0.0;
+        double amortization = 0.0;
+        for (Payment p : this.payments) {
+            amortization += p.getAmortization();
+        }
+        return -amortization;
     }
 
     private Double getTotalLifeInsurance() {
-        return 0.0;
+        double insurance = 0.0;
+        for (Payment p : this.payments) {
+            insurance += p.getPeriodicCosts().lifeInsurance();
+        }
+        return -insurance;
     }
 
     private Double getTotalRiskInsurance() {
-        return 0.0;
+        double insurance = 0.0;
+        for (Payment p : this.payments) {
+            insurance += p.getPeriodicCosts().riskInsurance();
+        }
+        return -insurance;
     }
 
     private Double getTotalPeriodCommission() {
-        return 0.0;
+        double commission = 0.0;
+        for (Payment p : this.payments) {
+            commission += p.getPeriodicCosts().periodicCommission();
+        }
+        return commission;
     }
 
     private Double getTotalAdministrationFee() {
-        return 0.0;
+        double totalAdministration = 0.0;
+        for (Payment p : this.payments) {
+            totalAdministration += p.getPeriodicCosts().shippingCosts() + p.getPeriodicCosts().administrationExpenses();
+        }
+        return totalAdministration;
     }
 
     private Double calculateFinancing() {   // monto del prestamo
