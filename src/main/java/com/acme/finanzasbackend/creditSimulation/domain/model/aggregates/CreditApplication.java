@@ -147,19 +147,96 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     }
 
     private Double calculateVan() {
-        return 1.0;
+        Double tasaDescuentoMensual = calculateFinalCok();
+
+        // Verificación básica
+        if (this.payments.isEmpty() || this.financing == null) {
+            return 0.0;
+        }
+
+        // 2. Agregar el Desembolso Inicial (Flujo Positivo en t=0), equivalente a S25
+        double van = -this.financing;
+
+        // 3. Sumar el Valor Actual de los Flujos Futuros (equivalente a VNA(COKi; Flujo))
+        // La iteración comienza en el índice 0, que corresponde al período t=1
+        for (int t = 0; t < this.payments.size(); t++) {
+            Payment payment = this.payments.get(t);
+            // El período 't' en la fórmula de descuento debe ser t+1
+            int tPeriodo = t + 1;
+            // cashFlow debe ser NEGATIVO
+            Double flujoNeto = payment.getCashFlow();
+            if (flujoNeto == null) continue;
+            // Fórmula de Descuento: Flujo_t / (1 + r)^t
+            double denominador = Math.pow(1 + tasaDescuentoMensual, tPeriodo);
+            double valorActualFlujo = flujoNeto / denominador;
+            van += valorActualFlujo;
+        }
+        return van; // 1. Obtener la Tasa de Descuento periódica (TEM COK)
+       
     }
 
     private Double calculateTir() {
-        return 1.0;
+        List<Double> cashFlows = new ArrayList<>();
+
+        // El primer flujo es el financiamiento negativo (desembolso inicial)
+        // Incluye el monto del préstamo menos los costos iniciales que ya pagaste
+        cashFlows.add(-this.financing);
+
+        // Agregar los flujos de caja de cada pago (cuotas + costos periódicos)
+        for (Payment payment : this.payments) {
+            double cashFlow = payment.getFee()
+                    + payment.getPeriodicCosts().getTotalPeriodicCosts();
+            cashFlows.add(cashFlow);
+        }
+
+        // Parámetros para el cálculo del TIR
+        double guess = 0.01; // Tasa inicial (1% mensual)
+        int maxIterations = 100;
+        double tolerance = 0.00001;
+        double rate = guess;
+
+        for (int i = 0; i < maxIterations; i++) {
+            double npv = 0.0;
+            double dnpv = 0.0;
+
+            for (int j = 0; j < cashFlows.size(); j++) {
+                npv += cashFlows.get(j) / Math.pow(1 + rate, j);
+                dnpv += -j * cashFlows.get(j) / Math.pow(1 + rate, j + 1);
+            }
+
+            if (Math.abs(npv) < tolerance) {
+                return rate; // TIR mensual
+            }
+
+            if (Math.abs(dnpv) < tolerance) {
+                return null;
+            }
+
+            rate = rate - npv / dnpv;
+
+            if (rate < -0.99 || Double.isNaN(rate) || Double.isInfinite(rate)) {
+                return null;
+            }
+        }
+        return null;
     }
 
     private Double calculateTceaPercentage() {
-        return 1.0;
+        Double tir = calculateTir();
+        if (tir == null) {
+            return null; // Si no se pudo calcular el TIR, no se puede calcular TCEA
+        }
+        // I6 = número de cuotas por año (12 meses)
+        double cuotasPorAnio = 12.0;
+
+        // Fórmula: TCEA = (1 + TIR)^(cuotas por año) - 1
+        double tcea = Math.pow(1 + tir, cuotasPorAnio) - 1;
+
+        return tcea * 100;
     }
 
     private Double calculateFinalCok() {
-        return 0.0;
+        return 1.0;
     }
 
     private Double getTotalInterest() {
