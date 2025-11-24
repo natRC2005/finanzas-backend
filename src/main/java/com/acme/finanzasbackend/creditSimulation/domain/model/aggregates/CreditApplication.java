@@ -55,6 +55,10 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
     @JoinColumn(name = "interest_rate_id", nullable = false, unique = true)
     private InterestRate interestRate;
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "cok_id", nullable = false, unique = true)
+    private InterestRate cok;
+
     @ManyToOne
     @JoinColumn(name = "bonus_id", nullable = false)
     private Bonus bonus;
@@ -88,7 +92,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
             CreateCreditApplicationCommand command,
             Client client, Housing housing, Currency currency,
             FinanceEntity financeEntity, InterestRate interestRate,
-            Bonus bonus, GracePeriod gracePeriod,
+            InterestRate cok, Bonus bonus, GracePeriod gracePeriod,
             Boolean hasAnotherHousingFinancing) {
         this.realStateCompanyId = new RealStateCompanyId(command.realStateCompanyId());
         this.startDate = command.startDate();
@@ -97,6 +101,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
         this.currency = currency;
         this.financeEntity = financeEntity;
         this.interestRate = interestRate;
+        this.cok = cok;
         this.bonus = bonus;
         this.gracePeriod = gracePeriod;
         this.initialCosts = new InitialCosts(command.notaryCost(), command.registryCost(),
@@ -183,7 +188,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
 
     private Double calculateFinancing() {   // monto del prestamo
          return this.housing.getSalePrice() - this.downPaymentPercentage/100 * this.housing.getSalePrice()
-                 + this.initialCosts.getTotalInitialCost();
+                 + this.initialCosts.getTotalInitialCost() - this.bonus.getGivenAmount();
     }
 
     private double pago(double tasa, double nPeriod, double currentValue) {

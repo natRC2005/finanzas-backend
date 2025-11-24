@@ -14,6 +14,7 @@ public record CreditApplicationResource(
         Boolean financeEntityApproved,
         String financeEntityReason,
         InterestRateResource interestRate,
+        InterestRateResource cok,
         GracePeriodResource gracePeriod,
         InitialCostsResource initialCosts,
         PeriodicCostsResource periodicCosts,
