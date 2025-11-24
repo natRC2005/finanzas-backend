@@ -339,6 +339,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
                         this.monthsPaymentTerm - i + 1, initialBalance);
                 amortization = fee - interest - lifeInsurance;
                 finalBalance = initialBalance + amortization;
+                if (i == this.monthsPaymentTerm) finalBalance = 0.0;
             }
 
             PeriodicCosts paymentPeriodicCosts = new PeriodicCosts(this.periodicCosts.periodicCommission(),
@@ -346,7 +347,7 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
                     lifeInsurance, riskInsurance, this.periodicCosts.monthlyStatementDelivery());
 
             double cashFlow = fee - paymentPeriodicCosts.totalPeriodicCostsWithoutLifeInsurance() + cashFlowExtra;
-            
+
             Payment payment = new Payment(i, paymentDate, this.interestRate.getTem(), gracePeriodType,
                     initialBalance, interest, fee, amortization, paymentPeriodicCosts, finalBalance, cashFlow);
 
@@ -360,26 +361,4 @@ public class CreditApplication extends AuditableAbstractAggregateRoot<CreditAppl
         payment.setCreditApplication(null);
         this.payments.remove(payment);
     }
-
-    /**
-     * Missing tasks
-     * - create payment plan
-     *  -> calculate van & tir
-     *
-     *  MISSING
-     *  - update credit evaluation failed
-     *  - get all credit evaluations
-     *
-     *  // UPDATE -> Add variables -> completely refactor values calculus
-     *      -> remember to consider all kinds of effective rates
-     *      -> adapt the whole Excel to code (cries)
-     *      -> FIRST -> Check InterestRate use
-     *
-     *  FOR SATURDAY
-     *  -> Calculate cashFlow -> JUST MISSING THIS FOR PAYMENTSSS - CHECK
-     *      - Add sum function for PeriodicCosts - CHECK
-     *      - Add calculateFinancing()
-     *      - Create PeriodicCosts object for each payment - CHECK
-     */
-
 }
