@@ -174,7 +174,9 @@ public class CreditApplicationCommandServiceImpl implements CreditApplicationCom
         }
         var gracePeriod = new GracePeriod(command.gracePeriodType(), gracePeriodValidTime);
 
-        boolean hasAnotherHousingFinancing = creditApplicationRepository.existsByClient(client);
+        boolean hasAnotherHousingFinancing = creditApplicationRepository.existsByClient(client) &&
+                !creditApplicationRepository.existsByClientAndId(client, command.id());
+        if (creditApplicationRepository.findAllByClient(client).size() >= 2) hasAnotherHousingFinancing = true;
 
         creditApplication.modifyCreditApplication(command, client, housing, currency, financeEntity,
                 interestRate, cok, bonus, gracePeriod, hasAnotherHousingFinancing);
