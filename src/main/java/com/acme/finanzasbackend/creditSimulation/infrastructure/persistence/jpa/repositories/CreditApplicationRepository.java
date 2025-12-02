@@ -13,5 +13,7 @@ import java.util.Optional;
 public interface CreditApplicationRepository extends JpaRepository<CreditApplication, Long> {
     Optional<CreditApplication> findById(Long id);
     Boolean existsByClient(Client client);
+    Boolean existsByClientAndId(Client client, Long id);
+    List<CreditApplication> findAllByClient(Client client);
     List<CreditApplication> findAllByRealStateCompanyId(RealStateCompanyId realStateCompanyId);
 }
